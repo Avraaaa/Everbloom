@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.scene.control.Label?>
+<?import javafx.scene.layout.VBox?>
+
+<VBox xmlns="http://javafx.com/javafx/21"
+      xmlns:fx="http://javafx.com/fxml/1"
+      fx:controller="com.everbloom.controller.MainController"
+      alignment="CENTER"
+      spacing="12.0"
+      stylesheets="@../css/app.css"
+      styleClass="welcome">
+    <children>
+        <Label text="EverBloom" styleClass="brand" />
+        <Label text="Custom Bouquet &amp; Flower Shop Manager" styleClass="tagline" />
+    </children>
+</VBox>
