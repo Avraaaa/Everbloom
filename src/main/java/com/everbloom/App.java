@@ -22,9 +22,9 @@ public class App extends Application {
         Parent root = loader.load();
 
         stage.setTitle(WINDOW_TITLE);
-        stage.setMinWidth(560);
-        stage.setMinHeight(340);
-        stage.setScene(new Scene(root, 760, 460));
+        stage.setMinWidth(940);
+        stage.setMinHeight(620);
+        stage.setScene(new Scene(root, 1180, 760));
         stage.show();
     }
 
