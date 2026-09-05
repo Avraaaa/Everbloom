@@ -1,0 +1,17 @@
+.welcome {
+    -fx-background-color: linear-gradient(to bottom right, #fffaf5, #f2f8ee);
+    -fx-padding: 48px;
+}
+
+.brand {
+    -fx-font-family: "Georgia";
+    -fx-font-size: 48px;
+    -fx-font-weight: bold;
+    -fx-text-fill: #315c45;
+}
+
+.tagline {
+    -fx-font-family: "Segoe UI";
+    -fx-font-size: 18px;
+    -fx-text-fill: #6f625b;
+}
