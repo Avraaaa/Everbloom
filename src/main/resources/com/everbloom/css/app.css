@@ -1,17 +1,278 @@
-.welcome {
-    -fx-background-color: linear-gradient(to bottom right, #fffaf5, #f2f8ee);
-    -fx-padding: 48px;
+.root {
+    -fx-font-family: "Segoe UI", "Helvetica Neue", sans-serif;
+    -fx-font-smoothing-type: gray;
 }
 
-.brand {
+.app-shell,
+.content-area,
+.page-scroll,
+.page-scroll > .viewport {
+    -fx-background-color: #f8f5f0;
+}
+
+.sidebar {
+    -fx-background-color: #234738;
+    -fx-padding: 34px 22px 24px 22px;
+}
+
+.brand-block {
+    -fx-padding: 0 10px 40px 10px;
+}
+
+.brand-name {
     -fx-font-family: "Georgia";
-    -fx-font-size: 48px;
+    -fx-font-size: 29px;
     -fx-font-weight: bold;
-    -fx-text-fill: #315c45;
+    -fx-text-fill: #fffaf2;
 }
 
-.tagline {
-    -fx-font-family: "Segoe UI";
-    -fx-font-size: 18px;
-    -fx-text-fill: #6f625b;
+.brand-subtitle {
+    -fx-font-size: 9px;
+    -fx-font-weight: bold;
+    -fx-text-fill: #b9cbbf;
+}
+
+.navigation-heading {
+    -fx-padding: 0 12px 12px 12px;
+    -fx-font-size: 10px;
+    -fx-font-weight: bold;
+    -fx-text-fill: #88a292;
+}
+
+.navigation-list {
+    -fx-fill-width: true;
+}
+
+.nav-button {
+    -fx-background-color: transparent;
+    -fx-background-radius: 9px;
+    -fx-border-width: 0;
+    -fx-padding: 13px 16px;
+    -fx-alignment: CENTER_LEFT;
+    -fx-cursor: hand;
+    -fx-font-size: 14px;
+    -fx-font-weight: 600;
+    -fx-text-fill: #dbe6df;
+}
+
+.nav-button:hover {
+    -fx-background-color: rgba(255, 255, 255, 0.08);
+    -fx-text-fill: #ffffff;
+}
+
+.nav-button.selected {
+    -fx-background-color: #fff8f1;
+    -fx-text-fill: #234738;
+}
+
+.sidebar-footer {
+    -fx-background-color: rgba(255, 255, 255, 0.06);
+    -fx-background-radius: 10px;
+    -fx-padding: 15px 16px;
+}
+
+.sidebar-footer-title {
+    -fx-font-size: 12px;
+    -fx-font-weight: bold;
+    -fx-text-fill: #f4eee7;
+}
+
+.sidebar-footer-copy {
+    -fx-font-size: 11px;
+    -fx-text-fill: #9fb4a7;
+}
+
+.dashboard-page,
+.placeholder-page {
+    -fx-padding: 40px 42px 44px 42px;
+}
+
+.placeholder-page {
+    -fx-alignment: CENTER;
+}
+
+.page-title {
+    -fx-font-family: "Georgia";
+    -fx-font-size: 31px;
+    -fx-font-weight: bold;
+    -fx-text-fill: #263d32;
+}
+
+.page-subtitle,
+.placeholder-message {
+    -fx-font-size: 14px;
+    -fx-text-fill: #7f847f;
+}
+
+.placeholder-message {
+    -fx-font-size: 15px;
+}
+
+.sample-label {
+    -fx-background-color: #eee3dd;
+    -fx-background-radius: 20px;
+    -fx-padding: 7px 11px;
+    -fx-font-size: 9px;
+    -fx-font-weight: bold;
+    -fx-text-fill: #916f69;
+}
+
+.summary-card,
+.recent-orders-card {
+    -fx-background-color: #fffdf9;
+    -fx-background-radius: 14px;
+    -fx-border-color: #ebe5dd;
+    -fx-border-radius: 14px;
+    -fx-border-width: 1px;
+    -fx-effect: dropshadow(gaussian, rgba(49, 65, 56, 0.08), 18, 0.12, 0, 5);
+}
+
+.summary-card {
+    -fx-padding: 22px 20px;
+    -fx-border-width: 1px 1px 1px 4px;
+}
+
+.card-orders {
+    -fx-border-color: #ebe5dd #ebe5dd #ebe5dd #c88f8a;
+}
+
+.card-active {
+    -fx-border-color: #ebe5dd #ebe5dd #ebe5dd #bd9a70;
+}
+
+.card-ready {
+    -fx-border-color: #ebe5dd #ebe5dd #ebe5dd #658a72;
+}
+
+.card-customers {
+    -fx-border-color: #ebe5dd #ebe5dd #ebe5dd #8b7d9d;
+}
+
+.card-label {
+    -fx-font-size: 12px;
+    -fx-font-weight: bold;
+    -fx-text-fill: #777d78;
+}
+
+.card-value {
+    -fx-font-family: "Georgia";
+    -fx-font-size: 30px;
+    -fx-font-weight: bold;
+    -fx-text-fill: #294638;
+}
+
+.card-detail {
+    -fx-font-size: 11px;
+    -fx-text-fill: #9a9d99;
+}
+
+.recent-orders-card {
+    -fx-padding: 24px;
+}
+
+.section-title {
+    -fx-font-family: "Georgia";
+    -fx-font-size: 21px;
+    -fx-font-weight: bold;
+    -fx-text-fill: #30463b;
+}
+
+.section-subtitle {
+    -fx-font-size: 12px;
+    -fx-text-fill: #969994;
+}
+
+.recent-orders-table {
+    -fx-background-color: transparent;
+    -fx-border-width: 0;
+    -fx-table-cell-border-color: transparent;
+}
+
+.recent-orders-table .column-header-background {
+    -fx-background-color: #f5f1eb;
+    -fx-background-radius: 9px 9px 0 0;
+}
+
+.recent-orders-table .column-header,
+.recent-orders-table .filler {
+    -fx-background-color: transparent;
+    -fx-border-width: 0;
+    -fx-size: 42px;
+}
+
+.recent-orders-table .column-header .label {
+    -fx-alignment: CENTER_LEFT;
+    -fx-font-size: 10px;
+    -fx-font-weight: bold;
+    -fx-text-fill: #828680;
+}
+
+.recent-orders-table .table-row-cell {
+    -fx-background-color: #fffdf9;
+    -fx-border-color: transparent transparent #eee9e2 transparent;
+    -fx-border-width: 0 0 1px 0;
+    -fx-cell-size: 52px;
+}
+
+.recent-orders-table .table-row-cell:hover {
+    -fx-background-color: #faf6f1;
+}
+
+.recent-orders-table .table-row-cell:selected {
+    -fx-background-color: #f1eee8;
+}
+
+.recent-orders-table .table-cell {
+    -fx-alignment: CENTER_LEFT;
+    -fx-border-width: 0;
+    -fx-padding: 0 10px;
+    -fx-font-size: 12px;
+    -fx-text-fill: #4f5852;
+}
+
+.recent-orders-table .placeholder .label {
+    -fx-text-fill: #969994;
+}
+
+.status-badge {
+    -fx-background-radius: 20px;
+    -fx-padding: 5px 10px;
+    -fx-font-size: 10px;
+    -fx-font-weight: bold;
+}
+
+.status-preparing {
+    -fx-background-color: #f4ead9;
+    -fx-text-fill: #8a673a;
+}
+
+.status-ready {
+    -fx-background-color: #deeee3;
+    -fx-text-fill: #3d7652;
+}
+
+.status-arranging {
+    -fx-background-color: #eee5ed;
+    -fx-text-fill: #785e76;
+}
+
+.status-delivered {
+    -fx-background-color: #e7ece8;
+    -fx-text-fill: #5d6c62;
+}
+
+.scroll-bar:vertical {
+    -fx-background-color: transparent;
+    -fx-pref-width: 10px;
+}
+
+.scroll-bar:vertical .thumb {
+    -fx-background-color: #d8d3cc;
+    -fx-background-radius: 10px;
+}
+
+.scroll-bar:vertical .track,
+.scroll-bar:vertical .increment-button,
+.scroll-bar:vertical .decrement-button {
+    -fx-background-color: transparent;
 }
