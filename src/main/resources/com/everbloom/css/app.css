@@ -461,6 +461,28 @@
     -fx-text-fill: #888b85;
 }
 
+.dashboard-message,
+.reports-message {
+    -fx-background-color: #f6e8e5;
+    -fx-background-radius: 8px;
+    -fx-padding: 10px 13px;
+    -fx-text-fill: #9a4f48;
+    -fx-font-size: 12px;
+}
+
+.reports-page {
+    -fx-padding: 40px 42px 44px 42px;
+}
+
+.reports-filter-card,
+.reports-card {
+    -fx-background-color: #fffdf9;
+    -fx-background-radius: 12px;
+    -fx-border-color: #ebe5dd;
+    -fx-border-radius: 12px;
+    -fx-padding: 18px 20px;
+}
+
 .bouquet-page {
     -fx-padding: 40px 42px 44px 42px;
 }

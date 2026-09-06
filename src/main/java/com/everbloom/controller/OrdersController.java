@@ -2,7 +2,11 @@ package com.everbloom.controller;
 
 import com.everbloom.database.DatabaseConnection;
 import com.everbloom.model.Order;
+import com.everbloom.observer.NotificationObserver;
+import com.everbloom.observer.OrderViewRefreshObserver;
+import com.everbloom.repository.NotificationRepository;
 import com.everbloom.repository.OrderRepository;
+import com.everbloom.service.NotificationService;
 import com.everbloom.service.OrderService;
 import javafx.beans.property.ReadOnlyStringWrapper;
 import javafx.collections.FXCollections;
@@ -24,7 +28,10 @@ public class OrdersController {
     private OrderService orderService;
 
     @FXML private void initialize() {
-        orderService = new OrderService(new OrderRepository(new DatabaseConnection()));
+        DatabaseConnection databaseConnection = new DatabaseConnection();
+        orderService = new OrderService(new OrderRepository(databaseConnection));
+        orderService.addObserver(new NotificationObserver(new NotificationService(new NotificationRepository(databaseConnection))));
+        orderService.addObserver(new OrderViewRefreshObserver(this::refreshOrders));
         statusComboBox.setItems(FXCollections.observableArrayList("All statuses", "ORDERED", "PREPARING", "ARRANGING", "READY", "DELIVERED"));
         statusComboBox.setValue("All statuses");
         numberColumn.setCellValueFactory(cell -> new ReadOnlyStringWrapper(cell.getValue().getOrderNumber()));
@@ -45,7 +52,6 @@ public class OrdersController {
     @FXML private void advanceOrder() {
         try {
             orderService.advanceOrder(orderTable.getSelectionModel().getSelectedItem());
-            refreshOrders();
         } catch (IllegalArgumentException | IllegalStateException exception) { showMessage(exception.getMessage()); }
         catch (SQLException exception) { showMessage("Unable to update the order."); }
     }
