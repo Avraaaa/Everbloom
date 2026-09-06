@@ -11,6 +11,7 @@ import com.everbloom.model.Customer;
 import com.everbloom.model.Extra;
 import com.everbloom.model.ExtraDecorator;
 import com.everbloom.model.Flower;
+import com.everbloom.model.Order;
 import com.everbloom.pricing.LoyaltyPricingStrategy;
 import com.everbloom.pricing.PricingStrategy;
 import com.everbloom.pricing.StandardPricingStrategy;
@@ -18,11 +19,13 @@ import com.everbloom.repository.CustomerRepository;
 import com.everbloom.repository.ExtraRepository;
 import com.everbloom.repository.FlowerRepository;
 import com.everbloom.repository.BouquetTemplateRepository;
+import com.everbloom.repository.OrderRepository;
 import com.everbloom.service.CustomerService;
 import com.everbloom.service.ExtraService;
 import com.everbloom.service.FlowerService;
 import com.everbloom.service.BouquetTemplateService;
 import com.everbloom.service.PricingService;
+import com.everbloom.service.OrderService;
 import javafx.beans.property.ReadOnlyObjectWrapper;
 import javafx.beans.property.ReadOnlyStringWrapper;
 import javafx.collections.FXCollections;
@@ -82,6 +85,12 @@ public class BouquetBuilderController {
     private ComboBox<String> pricingPolicyComboBox;
 
     @FXML
+    private ComboBox<String> fulfillmentComboBox;
+
+    @FXML
+    private TextArea deliveryAddressTextArea;
+
+    @FXML
     private TableView<Extra> selectedExtraTable;
 
     @FXML
@@ -113,6 +122,7 @@ public class BouquetBuilderController {
     private ExtraService extraService;
     private BouquetTemplateService templateService;
     private PricingService pricingService;
+    private OrderService orderService;
     private BouquetBuilder bouquetBuilder;
     private final List<Extra> selectedExtras = new ArrayList<>();
 
@@ -124,6 +134,7 @@ public class BouquetBuilderController {
         extraService = new ExtraService(new ExtraRepository(databaseConnection));
         templateService = new BouquetTemplateService(new BouquetTemplateRepository(databaseConnection));
         pricingService = new PricingService();
+        orderService = new OrderService(new OrderRepository(databaseConnection));
         bouquetBuilder = new BouquetBuilder();
 
         configureControls();
@@ -236,6 +247,29 @@ public class BouquetBuilderController {
         }
     }
 
+    @FXML
+    private void placeOrder() {
+        synchronizeBuilderOptions();
+        try {
+            Bouquet bouquet = bouquetBuilder.build();
+            BouquetItem bouquetItem = decorateBouquet(bouquet);
+            PricingStrategy pricingStrategy = getSelectedPricingStrategy();
+            long subtotal = bouquetItem.getSubtotal();
+            long discount = pricingService.calculateDiscount(bouquetItem, pricingStrategy);
+            long total = pricingService.calculateFinalTotal(bouquetItem, pricingStrategy);
+            Order order = new Order(createOrderNumber(), bouquet.getCustomer(), bouquet, selectedExtras,
+                    fulfillmentComboBox.getValue(), getDeliveryAddress(), pricingStrategy.getName(),
+                    subtotal, discount, total);
+            Order savedOrder = orderService.placeOrder(order);
+            resetBuilder();
+            showMessage("Order " + savedOrder.getOrderNumber() + " placed successfully.");
+        } catch (IllegalArgumentException exception) {
+            showMessage(exception.getMessage());
+        } catch (SQLException exception) {
+            showMessage("Unable to place the order. Please try again.");
+        }
+    }
+
     private void configureControls() {
         occasionComboBox.setItems(FXCollections.observableArrayList(
                 "Birthday", "Anniversary", "Thank You", "Congratulations", "Just Because"
@@ -246,6 +280,8 @@ public class BouquetBuilderController {
         wrappingComboBox.setValue("No wrapping");
         pricingPolicyComboBox.setItems(FXCollections.observableArrayList("Standard Pricing", "Loyalty Pricing"));
         pricingPolicyComboBox.setValue("Standard Pricing");
+        fulfillmentComboBox.setItems(FXCollections.observableArrayList("PICKUP", "DELIVERY"));
+        fulfillmentComboBox.setValue("PICKUP");
         flowerQuantitySpinner.setValueFactory(new SpinnerValueFactory.IntegerSpinnerValueFactory(1, 1, 1));
 
         customerComboBox.setConverter(customerConverter());
@@ -373,6 +409,34 @@ public class BouquetBuilderController {
             return new LoyaltyPricingStrategy();
         }
         return new StandardPricingStrategy();
+    }
+
+    private String createOrderNumber() {
+        return "EB-" + System.currentTimeMillis();
+    }
+
+    private String getDeliveryAddress() {
+        if (!"DELIVERY".equals(fulfillmentComboBox.getValue())) {
+            return null;
+        }
+        String address = deliveryAddressTextArea.getText();
+        return address == null ? null : address.trim();
+    }
+
+    private void resetBuilder() {
+        bouquetBuilder = new BouquetBuilder();
+        selectedExtras.clear();
+        customerComboBox.setValue(null);
+        templateComboBox.setValue(null);
+        occasionComboBox.setValue(null);
+        wrappingComboBox.setValue("No wrapping");
+        messageTextArea.clear();
+        fulfillmentComboBox.setValue("PICKUP");
+        deliveryAddressTextArea.clear();
+        pricingPolicyComboBox.setValue("Standard Pricing");
+        refreshSelectedFlowers();
+        refreshSelectedExtras();
+        showEmptySummary();
     }
 
     private void configureQuantitySpinner(Flower flower) {

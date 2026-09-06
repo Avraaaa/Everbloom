@@ -151,6 +151,16 @@
                                         </HBox>
                                     </children>
                                 </VBox>
+
+                                <VBox spacing="11.0">
+                                    <children>
+                                        <Label text="Fulfillment" styleClass="section-title" />
+                                        <ComboBox fx:id="fulfillmentComboBox" promptText="Pickup or delivery" maxWidth="Infinity" />
+                                        <TextArea fx:id="deliveryAddressTextArea" prefRowCount="2"
+                                                  promptText="Delivery address (required for delivery)" wrapText="true" />
+                                    </children>
+                                </VBox>
+                                <Button text="Place Order" maxWidth="Infinity" onAction="#placeOrder" styleClass="primary-action" />
                             </children>
                         </VBox>
                     </children>
