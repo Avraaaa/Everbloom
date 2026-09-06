@@ -69,7 +69,7 @@ public class MainController {
 
     @FXML
     private void showCatalogue() {
-        showPlaceholder("Catalogue", catalogueButton);
+        showPage(loadView("catalogue-view.fxml"), catalogueButton);
     }
 
     @FXML
