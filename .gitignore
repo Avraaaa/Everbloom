@@ -4,6 +4,9 @@
 # Maven build output
 target/
 
+# Local application data
+data/
+
 # Log file
 *.log
 

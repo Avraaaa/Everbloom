@@ -74,7 +74,7 @@ public class MainController {
 
     @FXML
     private void showCustomers() {
-        showPlaceholder("Customers", customersButton);
+        showPage(loadView("customer-view.fxml"), customersButton);
     }
 
     @FXML
