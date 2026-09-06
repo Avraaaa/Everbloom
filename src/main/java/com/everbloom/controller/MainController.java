@@ -59,7 +59,7 @@ public class MainController {
 
     @FXML
     private void showBouquetBuilder() {
-        showPlaceholder("Bouquet Builder", bouquetBuilderButton);
+        showPage(loadView("bouquet-builder-view.fxml"), bouquetBuilderButton);
     }
 
     @FXML

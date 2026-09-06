@@ -460,3 +460,61 @@
     -fx-font-size: 11px;
     -fx-text-fill: #888b85;
 }
+
+.bouquet-page {
+    -fx-padding: 40px 42px 44px 42px;
+}
+
+.bouquet-message {
+    -fx-background-color: #f6e8e5;
+    -fx-background-radius: 8px;
+    -fx-padding: 10px 13px;
+    -fx-text-fill: #9a4f48;
+    -fx-font-size: 12px;
+}
+
+.bouquet-builder-card,
+.bouquet-summary-card {
+    -fx-background-color: #fffdf9;
+    -fx-background-radius: 12px;
+    -fx-border-color: #ebe5dd;
+    -fx-border-radius: 12px;
+    -fx-padding: 22px;
+}
+
+.bouquet-summary-card {
+    -fx-min-width: 290px;
+}
+
+.bouquet-summary-area {
+    -fx-background-color: #f8f5f0;
+    -fx-background-radius: 8px;
+    -fx-border-color: #e5ded4;
+    -fx-border-radius: 8px;
+    -fx-font-size: 12px;
+    -fx-text-fill: #4f5852;
+}
+
+.bouquet-summary-area .content {
+    -fx-background-color: #f8f5f0;
+    -fx-background-radius: 8px;
+}
+
+.bouquet-total-row {
+    -fx-background-color: #edf3ed;
+    -fx-background-radius: 8px;
+    -fx-padding: 12px;
+}
+
+.bouquet-total-label {
+    -fx-font-size: 11px;
+    -fx-font-weight: bold;
+    -fx-text-fill: #58705e;
+}
+
+.bouquet-total-value {
+    -fx-font-family: "Georgia";
+    -fx-font-size: 17px;
+    -fx-font-weight: bold;
+    -fx-text-fill: #28513f;
+}

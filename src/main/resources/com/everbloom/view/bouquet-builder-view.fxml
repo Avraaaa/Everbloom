@@ -1,0 +1,110 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.scene.control.Button?>
+<?import javafx.scene.control.ComboBox?>
+<?import javafx.scene.control.Label?>
+<?import javafx.scene.control.ScrollPane?>
+<?import javafx.scene.control.Spinner?>
+<?import javafx.scene.control.TableColumn?>
+<?import javafx.scene.control.TableView?>
+<?import javafx.scene.control.TextArea?>
+<?import javafx.scene.layout.HBox?>
+<?import javafx.scene.layout.VBox?>
+
+<ScrollPane fitToWidth="true" hbarPolicy="NEVER" styleClass="page-scroll"
+            xmlns="http://javafx.com/javafx/21" xmlns:fx="http://javafx.com/fxml/1"
+            fx:controller="com.everbloom.controller.BouquetBuilderController">
+    <content>
+        <VBox spacing="22.0" styleClass="bouquet-page">
+            <children>
+                <VBox spacing="5.0">
+                    <children>
+                        <Label text="Build a Bouquet" styleClass="page-title" />
+                        <Label text="Create a custom bouquet from the current flower catalogue." styleClass="page-subtitle" />
+                    </children>
+                </VBox>
+
+                <Label fx:id="messageLabel" managed="false" text="" visible="false" styleClass="bouquet-message" />
+
+                <HBox alignment="TOP_LEFT" spacing="20.0">
+                    <children>
+                        <VBox spacing="18.0" HBox.hgrow="ALWAYS" styleClass="bouquet-builder-card">
+                            <children>
+                                <VBox spacing="11.0">
+                                    <children>
+                                        <Label text="Bouquet details" styleClass="section-title" />
+                                        <HBox spacing="10.0">
+                                            <children>
+                                                <ComboBox fx:id="templateComboBox" promptText="Start from a template" HBox.hgrow="ALWAYS" />
+                                                <Button text="Use Template" onAction="#applyTemplate" styleClass="secondary-action" />
+                                            </children>
+                                        </HBox>
+                                        <ComboBox fx:id="customerComboBox" onAction="#updateBouquetOptions"
+                                                  promptText="Choose customer" maxWidth="Infinity" />
+                                        <HBox spacing="10.0">
+                                            <children>
+                                                <ComboBox fx:id="occasionComboBox" onAction="#updateBouquetOptions"
+                                                          promptText="Choose occasion" HBox.hgrow="ALWAYS" />
+                                                <ComboBox fx:id="wrappingComboBox" onAction="#updateBouquetOptions"
+                                                          promptText="Wrapping" HBox.hgrow="ALWAYS" />
+                                            </children>
+                                        </HBox>
+                                        <TextArea fx:id="messageTextArea" onKeyReleased="#updateBouquetOptions"
+                                                  prefRowCount="2" promptText="Optional card message" wrapText="true" />
+                                    </children>
+                                </VBox>
+
+                                <VBox spacing="11.0">
+                                    <children>
+                                        <Label text="Flowers" styleClass="section-title" />
+                                        <HBox alignment="CENTER_LEFT" spacing="10.0">
+                                            <children>
+                                                <ComboBox fx:id="flowerComboBox" promptText="Choose flower" HBox.hgrow="ALWAYS" />
+                                                <Spinner fx:id="flowerQuantitySpinner" prefWidth="100.0" />
+                                                <Button text="Add" onAction="#addFlower" styleClass="secondary-action" />
+                                            </children>
+                                        </HBox>
+                                        <TableView fx:id="selectedFlowerTable" prefHeight="250.0" styleClass="catalogue-table">
+                                            <columns>
+                                                <TableColumn fx:id="selectedFlowerNameColumn" prefWidth="280.0" text="FLOWER" />
+                                                <TableColumn fx:id="selectedFlowerQuantityColumn" prefWidth="100.0" text="QUANTITY" />
+                                                <TableColumn fx:id="selectedFlowerSubtotalColumn" prefWidth="150.0" text="SUBTOTAL" />
+                                            </columns>
+                                        </TableView>
+                                        <HBox>
+                                            <children>
+                                                <Button text="Remove Selected" onAction="#removeSelectedFlower" styleClass="danger-action" />
+                                                <HBox HBox.hgrow="ALWAYS" />
+                                                <Button text="Build Bouquet" onAction="#buildBouquet" styleClass="primary-action" />
+                                            </children>
+                                        </HBox>
+                                    </children>
+                                </VBox>
+                            </children>
+                        </VBox>
+
+                        <VBox prefWidth="315.0" spacing="14.0" styleClass="bouquet-summary-card">
+                            <children>
+                                <VBox spacing="4.0">
+                                    <children>
+                                        <Label text="Current Bouquet" styleClass="section-title" />
+                                        <Label text="A preview only. Orders are not saved yet." styleClass="section-subtitle" wrapText="true" />
+                                    </children>
+                                </VBox>
+                                <TextArea fx:id="bouquetSummaryArea" editable="false" focusTraversable="false"
+                                          prefHeight="300.0" wrapText="true" styleClass="bouquet-summary-area" />
+                                <HBox alignment="CENTER_LEFT" styleClass="bouquet-total-row">
+                                    <children>
+                                        <Label text="Flower subtotal" styleClass="bouquet-total-label" />
+                                        <HBox HBox.hgrow="ALWAYS" />
+                                        <Label fx:id="bouquetSubtotalLabel" text="BDT 0" styleClass="bouquet-total-value" />
+                                    </children>
+                                </HBox>
+                            </children>
+                        </VBox>
+                    </children>
+                </HBox>
+            </children>
+        </VBox>
+    </content>
+</ScrollPane>
