@@ -33,6 +33,12 @@
                                 <VBox spacing="11.0">
                                     <children>
                                         <Label text="Bouquet details" styleClass="section-title" />
+                                        <HBox spacing="8.0">
+                                            <children>
+                                                <Button fx:id="undoButton" text="Undo" onAction="#undoEdit" styleClass="secondary-action" />
+                                                <Button fx:id="redoButton" text="Redo" onAction="#redoEdit" styleClass="secondary-action" />
+                                            </children>
+                                        </HBox>
                                         <HBox spacing="10.0">
                                             <children>
                                                 <ComboBox fx:id="templateComboBox" promptText="Start from a template" HBox.hgrow="ALWAYS" />

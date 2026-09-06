@@ -54,6 +54,26 @@ public class BouquetBuilder {
         return true;
     }
 
+    public boolean removeFlowerQuantity(Flower flower, int quantity) {
+        if (quantity <= 0) {
+            throw new IllegalArgumentException("Flower quantity must be at least one.");
+        }
+        int flowerIndex = findFlowerIndex(flower);
+        if (flowerIndex < 0) {
+            return false;
+        }
+        BouquetFlower selectedFlower = selectedFlowers.get(flowerIndex);
+        if (quantity > selectedFlower.getQuantity()) {
+            throw new IllegalArgumentException("Cannot remove more flowers than selected.");
+        }
+        if (quantity == selectedFlower.getQuantity()) {
+            selectedFlowers.remove(flowerIndex);
+        } else {
+            selectedFlowers.set(flowerIndex, new BouquetFlower(flower, selectedFlower.getQuantity() - quantity));
+        }
+        return true;
+    }
+
     public List<BouquetFlower> getSelectedFlowers() {
         return List.copyOf(selectedFlowers);
     }
