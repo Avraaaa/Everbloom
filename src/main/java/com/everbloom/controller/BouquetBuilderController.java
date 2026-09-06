@@ -4,12 +4,15 @@ import com.everbloom.database.DatabaseConnection;
 import com.everbloom.model.Bouquet;
 import com.everbloom.model.BouquetBuilder;
 import com.everbloom.model.BouquetFlower;
+import com.everbloom.model.BouquetTemplate;
 import com.everbloom.model.Customer;
 import com.everbloom.model.Flower;
 import com.everbloom.repository.CustomerRepository;
 import com.everbloom.repository.FlowerRepository;
+import com.everbloom.repository.BouquetTemplateRepository;
 import com.everbloom.service.CustomerService;
 import com.everbloom.service.FlowerService;
+import com.everbloom.service.BouquetTemplateService;
 import javafx.beans.property.ReadOnlyObjectWrapper;
 import javafx.beans.property.ReadOnlyStringWrapper;
 import javafx.collections.FXCollections;
@@ -31,6 +34,9 @@ public class BouquetBuilderController {
 
     @FXML
     private ComboBox<Customer> customerComboBox;
+
+    @FXML
+    private ComboBox<BouquetTemplate> templateComboBox;
 
     @FXML
     private ComboBox<String> occasionComboBox;
@@ -70,6 +76,7 @@ public class BouquetBuilderController {
 
     private CustomerService customerService;
     private FlowerService flowerService;
+    private BouquetTemplateService templateService;
     private BouquetBuilder bouquetBuilder;
 
     @FXML
@@ -77,6 +84,7 @@ public class BouquetBuilderController {
         DatabaseConnection databaseConnection = new DatabaseConnection();
         customerService = new CustomerService(new CustomerRepository(databaseConnection));
         flowerService = new FlowerService(new FlowerRepository(databaseConnection));
+        templateService = new BouquetTemplateService(new BouquetTemplateRepository(databaseConnection));
         bouquetBuilder = new BouquetBuilder();
 
         configureControls();
@@ -89,6 +97,23 @@ public class BouquetBuilderController {
     private void updateBouquetOptions() {
         synchronizeBuilderOptions();
         updateSummaryIfComplete();
+    }
+
+    @FXML
+    private void applyTemplate() {
+        try {
+            BouquetTemplate template = templateComboBox.getValue();
+            bouquetBuilder = templateService.copyToBuilder(template);
+            bouquetBuilder.forCustomer(customerComboBox.getValue());
+            occasionComboBox.setValue(template.getOccasion());
+            wrappingComboBox.setValue(template.getWrappingStyle());
+            messageTextArea.setText(template.getMessage());
+            refreshSelectedFlowers();
+            updateSummaryIfComplete();
+            showMessage("Template copied. You can now customize this bouquet.");
+        } catch (IllegalArgumentException exception) {
+            showMessage(exception.getMessage());
+        }
     }
 
     @FXML
@@ -142,6 +167,7 @@ public class BouquetBuilderController {
         flowerQuantitySpinner.setValueFactory(new SpinnerValueFactory.IntegerSpinnerValueFactory(1, 1, 1));
 
         customerComboBox.setConverter(customerConverter());
+        templateComboBox.setConverter(templateConverter());
         flowerComboBox.setConverter(flowerConverter());
         flowerComboBox.valueProperty().addListener((observable, oldFlower, flower) -> configureQuantitySpinner(flower));
     }
@@ -160,6 +186,7 @@ public class BouquetBuilderController {
     private void loadOptions() {
         try {
             customerComboBox.setItems(FXCollections.observableArrayList(customerService.findAll()));
+            templateComboBox.setItems(FXCollections.observableArrayList(templateService.findAll()));
             flowerComboBox.setItems(FXCollections.observableArrayList(findAvailableFlowers()));
             if (customerComboBox.getItems().isEmpty()) {
                 showMessage("Add a customer before building a bouquet.");
@@ -240,6 +267,13 @@ public class BouquetBuilderController {
             public Flower fromString(String value) {
                 return null;
             }
+        };
+    }
+
+    private StringConverter<BouquetTemplate> templateConverter() {
+        return new StringConverter<>() {
+            @Override public String toString(BouquetTemplate template) { return template == null ? "" : template.getName() + " - " + template.getOccasion(); }
+            @Override public BouquetTemplate fromString(String value) { return null; }
         };
     }
 

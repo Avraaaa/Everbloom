@@ -33,6 +33,12 @@
                                 <VBox spacing="11.0">
                                     <children>
                                         <Label text="Bouquet details" styleClass="section-title" />
+                                        <HBox spacing="10.0">
+                                            <children>
+                                                <ComboBox fx:id="templateComboBox" promptText="Start from a template" HBox.hgrow="ALWAYS" />
+                                                <Button text="Use Template" onAction="#applyTemplate" styleClass="secondary-action" />
+                                            </children>
+                                        </HBox>
                                         <ComboBox fx:id="customerComboBox" onAction="#updateBouquetOptions"
                                                   promptText="Choose customer" maxWidth="Infinity" />
                                         <HBox spacing="10.0">
