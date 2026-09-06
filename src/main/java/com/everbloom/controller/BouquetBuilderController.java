@@ -33,6 +33,7 @@ import com.everbloom.service.FlowerService;
 import com.everbloom.service.BouquetTemplateService;
 import com.everbloom.service.PricingService;
 import com.everbloom.service.OrderService;
+import com.everbloom.util.MoneyFormatter;
 import javafx.beans.property.ReadOnlyObjectWrapper;
 import javafx.beans.property.ReadOnlyStringWrapper;
 import javafx.collections.FXCollections;
@@ -604,10 +605,10 @@ public class BouquetBuilderController {
 
     private void showEmptySummary() {
         bouquetSummaryArea.setText("Select a customer and occasion, then add flowers to preview the bouquet.");
-        bouquetSubtotalLabel.setText("BDT 0");
+        bouquetSubtotalLabel.setText(MoneyFormatter.format(0));
         selectedPricingPolicyLabel.setText("Standard Pricing");
-        discountLabel.setText("BDT 0");
-        finalTotalLabel.setText("BDT 0");
+        discountLabel.setText(MoneyFormatter.format(0));
+        finalTotalLabel.setText(MoneyFormatter.format(0));
     }
 
     private PricingStrategy getSelectedPricingStrategy() {
@@ -707,7 +708,7 @@ public class BouquetBuilderController {
     }
 
     private String formatPrice(long price) {
-        return "BDT " + price;
+        return MoneyFormatter.format(price);
     }
 
     private boolean isExtraSelected(Extra extra) {

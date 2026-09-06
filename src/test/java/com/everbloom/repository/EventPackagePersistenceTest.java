@@ -49,7 +49,7 @@ class EventPackagePersistenceTest {
         assertEquals("Wedding Package", loaded.getName());
         assertEquals(2, loaded.getChildren().size());
         assertEquals(21000, loaded.getTotalPrice());
-        assertTrue(loaded.getSummary().contains("Head Table Arrangement: BDT 9000"));
+        assertTrue(loaded.getSummary().contains("Head Table Arrangement: BDT 90.00"));
         ArrangementGroup loadedReception = (ArrangementGroup) loaded.getChildren().get(1);
         ArrangementGroup loadedTables = (ArrangementGroup) loadedReception.getChildren().getFirst();
         assertEquals("Tables", loadedTables.getName());

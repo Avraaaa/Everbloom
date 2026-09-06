@@ -5,7 +5,7 @@
     <children>
         <Label text="Orders" styleClass="page-title"/>
         <Label fx:id="messageLabel" visible="false" managed="false" styleClass="catalogue-message"/>
-        <HBox spacing="10"><children><TextField fx:id="searchField" promptText="Search order or customer" onKeyReleased="#refreshOrders" HBox.hgrow="ALWAYS"/><ComboBox fx:id="statusComboBox" onAction="#refreshOrders"/><Button text="Refresh" onAction="#refreshOrders" styleClass="secondary-action"/></children></HBox>
+        <HBox spacing="10"><children><TextField fx:id="searchField" promptText="Search order or customer" onKeyReleased="#refreshOrders" HBox.hgrow="ALWAYS"/><ComboBox fx:id="statusComboBox" onAction="#refreshOrders"/><ComboBox fx:id="fulfillmentComboBox" onAction="#refreshOrders"/><Button text="Refresh" onAction="#refreshOrders" styleClass="secondary-action"/></children></HBox>
         <HBox spacing="18" VBox.vgrow="ALWAYS"><children>
             <VBox spacing="10" HBox.hgrow="ALWAYS" styleClass="customer-list-card"><children><TableView fx:id="orderTable" VBox.vgrow="ALWAYS" styleClass="catalogue-table"><columns><TableColumn fx:id="numberColumn" text="ORDER" prefWidth="150"/><TableColumn fx:id="customerColumn" text="CUSTOMER" prefWidth="180"/><TableColumn fx:id="statusColumn" text="STATUS" prefWidth="130"/><TableColumn fx:id="totalColumn" text="TOTAL" prefWidth="120"/></columns></TableView><Button text="Advance Status" onAction="#advanceOrder" styleClass="primary-action"/></children></VBox>
             <VBox prefWidth="300" spacing="10" styleClass="customer-details-card"><children><Label text="Order Details" styleClass="section-title"/><TextArea fx:id="detailsArea" editable="false" wrapText="true" VBox.vgrow="ALWAYS"/></children></VBox>

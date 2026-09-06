@@ -21,7 +21,7 @@
                 <VBox spacing="5.0">
                     <children>
                         <Label text="Catalogue" styleClass="page-title" />
-                        <Label text="Manage flowers and optional bouquet extras." styleClass="page-subtitle" />
+                        <Label text="Manage flowers, extras, and reusable bouquet templates." styleClass="page-subtitle" />
                     </children>
                 </VBox>
 
@@ -76,6 +76,28 @@
                                                 <TableColumn fx:id="extraDescriptionColumn" prefWidth="280.0" text="DESCRIPTION" />
                                                 <TableColumn fx:id="extraPriceColumn" prefWidth="130.0" text="PRICE" />
                                                 <TableColumn fx:id="extraStatusColumn" prefWidth="120.0" text="STATUS" />
+                                            </columns>
+                                        </TableView>
+                                    </children>
+                                </VBox>
+                            </content>
+                        </Tab>
+                        <Tab text="Bouquet Templates">
+                            <content>
+                                <VBox spacing="16.0" styleClass="catalogue-card">
+                                    <children>
+                                        <HBox alignment="CENTER_LEFT" spacing="10.0">
+                                            <children>
+                                                <HBox HBox.hgrow="ALWAYS" />
+                                                <Button text="Add Template" onAction="#addTemplate" styleClass="primary-action" />
+                                                <Button text="Edit" onAction="#editTemplate" styleClass="secondary-action" />
+                                            </children>
+                                        </HBox>
+                                        <TableView fx:id="templateTable" prefHeight="390.0" styleClass="catalogue-table">
+                                            <columns>
+                                                <TableColumn fx:id="templateNameColumn" prefWidth="170.0" text="NAME" />
+                                                <TableColumn fx:id="templateOccasionColumn" prefWidth="150.0" text="OCCASION" />
+                                                <TableColumn fx:id="templateFlowersColumn" prefWidth="350.0" text="FLOWERS" />
                                             </columns>
                                         </TableView>
                                     </children>

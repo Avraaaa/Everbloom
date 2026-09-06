@@ -5,6 +5,7 @@ import com.everbloom.model.PopularItem;
 import com.everbloom.model.SalesReportRow;
 import com.everbloom.repository.ReportRepository;
 import com.everbloom.service.ReportService;
+import com.everbloom.util.MoneyFormatter;
 import javafx.beans.property.ReadOnlyObjectWrapper;
 import javafx.beans.property.ReadOnlyStringWrapper;
 import javafx.collections.FXCollections;
@@ -91,6 +92,6 @@ public class ReportsController {
         extraTable.getItems().clear();
     }
 
-    private String formatPrice(long price) { return "BDT " + price; }
+    private String formatPrice(long price) { return MoneyFormatter.format(price); }
     private void showMessage(String message) { messageLabel.setText(message); messageLabel.setVisible(!message.isBlank()); messageLabel.setManaged(!message.isBlank()); }
 }

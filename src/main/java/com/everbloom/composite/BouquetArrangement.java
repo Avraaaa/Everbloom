@@ -1,6 +1,7 @@
 package com.everbloom.composite;
 
 import com.everbloom.model.BouquetItem;
+import com.everbloom.util.MoneyFormatter;
 
 public class BouquetArrangement implements EventPackageComponent {
     private final String name;
@@ -30,5 +31,5 @@ public class BouquetArrangement implements EventPackageComponent {
 
     public String getName() { return name; }
     public long getTotalPrice() { return bouquetItem == null ? storedPrice : bouquetItem.getSubtotal(); }
-    public String getSummary() { return name + ": BDT " + getTotalPrice(); }
+    public String getSummary() { return name + ": " + MoneyFormatter.format(getTotalPrice()); }
 }
