@@ -10,6 +10,9 @@ import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
+import java.util.ArrayList;
+import java.util.List;
+import com.everbloom.model.Customer;
 
 public class OrderRepository {
 
@@ -34,6 +37,27 @@ public class OrderRepository {
                 connection.rollback();
                 throw exception;
             }
+        }
+    }
+
+    public List<Order> findAll() throws SQLException {
+        String sql = "SELECT o.*, c.full_name, c.phone FROM orders o JOIN customers c ON o.customer_id = c.customer_id ORDER BY o.placed_at DESC";
+        List<Order> orders = new ArrayList<>();
+        try (Connection connection = databaseConnection.getConnection(); PreparedStatement statement = connection.prepareStatement(sql); ResultSet resultSet = statement.executeQuery()) {
+            while (resultSet.next()) {
+                Customer customer = new Customer(resultSet.getLong("customer_id"), resultSet.getString("full_name"), resultSet.getString("phone"), null, null);
+                orders.add(new Order(resultSet.getLong("order_id"), resultSet.getString("order_number"), customer, null, List.of(), resultSet.getString("fulfillment_type"), resultSet.getString("delivery_address_snapshot"), resultSet.getString("pricing_policy_snapshot"), resultSet.getLong("subtotal_snapshot"), resultSet.getLong("discount_snapshot"), resultSet.getLong("total_snapshot"), resultSet.getString("status"), null));
+            }
+        }
+        return orders;
+    }
+
+    public void updateStatus(Order order) throws SQLException {
+        String sql = "UPDATE orders SET status = ?, status_updated_at = CURRENT_TIMESTAMP WHERE order_id = ?";
+        try (Connection connection = databaseConnection.getConnection(); PreparedStatement statement = connection.prepareStatement(sql)) {
+            statement.setString(1, order.getStatus());
+            statement.setLong(2, order.getId());
+            statement.executeUpdate();
         }
     }
 

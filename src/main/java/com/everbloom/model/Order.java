@@ -2,6 +2,7 @@ package com.everbloom.model;
 
 import java.time.LocalDateTime;
 import java.util.List;
+import com.everbloom.state.*;
 
 public class Order {
 
@@ -16,7 +17,7 @@ public class Order {
     private long subtotal;
     private long discount;
     private long total;
-    private String status;
+    private OrderState state;
     private LocalDateTime placedAt;
 
     public Order(String orderNumber, Customer customer, Bouquet bouquet, List<Extra> extras,
@@ -40,7 +41,7 @@ public class Order {
         this.subtotal = subtotal;
         this.discount = discount;
         this.total = total;
-        this.status = status;
+        setStatus(status);
         this.placedAt = placedAt;
     }
 
@@ -93,12 +94,22 @@ public class Order {
     }
 
     public String getStatus() {
-        return status;
+        return state.getStatus();
     }
 
     public void setStatus(String status) {
-        this.status = status;
+        state = switch (status) {
+            case "ORDERED" -> new OrderedState();
+            case "PREPARING" -> new PreparingState();
+            case "ARRANGING" -> new ArrangingState();
+            case "READY" -> new ReadyState();
+            case "DELIVERED" -> new DeliveredState();
+            default -> throw new IllegalArgumentException("Unknown order status.");
+        };
     }
+
+    public void setState(OrderState state) { this.state = state; }
+    public void advanceStatus() { state.advance(this); }
 
     public LocalDateTime getPlacedAt() {
         return placedAt;

@@ -4,6 +4,8 @@ import com.everbloom.model.Order;
 import com.everbloom.repository.OrderRepository;
 
 import java.sql.SQLException;
+import java.util.ArrayList;
+import java.util.List;
 
 public class OrderService {
 
@@ -16,6 +18,23 @@ public class OrderService {
     public Order placeOrder(Order order) throws SQLException {
         validateOrder(order);
         return orderRepository.create(order);
+    }
+
+    public List<Order> findOrders(String searchText, String status) throws SQLException {
+        List<Order> matches = new ArrayList<>();
+        String query = searchText == null ? "" : searchText.trim().toLowerCase();
+        for (Order order : orderRepository.findAll()) {
+            boolean matchesSearch = query.isEmpty() || order.getOrderNumber().toLowerCase().contains(query) || order.getCustomer().getFullName().toLowerCase().contains(query);
+            boolean matchesStatus = status == null || "All statuses".equals(status) || status.equals(order.getStatus());
+            if (matchesSearch && matchesStatus) matches.add(order);
+        }
+        return matches;
+    }
+
+    public void advanceOrder(Order order) throws SQLException {
+        if (order == null) throw new IllegalArgumentException("Select an order first.");
+        order.advanceStatus();
+        orderRepository.updateStatus(order);
     }
 
     private void validateOrder(Order order) {
