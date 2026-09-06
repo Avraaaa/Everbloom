@@ -1,0 +1,94 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.scene.control.Button?>
+<?import javafx.scene.control.Label?>
+<?import javafx.scene.control.ScrollPane?>
+<?import javafx.scene.control.TableColumn?>
+<?import javafx.scene.control.TableView?>
+<?import javafx.scene.control.TextField?>
+<?import javafx.scene.layout.HBox?>
+<?import javafx.scene.layout.VBox?>
+
+<ScrollPane fitToWidth="true" hbarPolicy="NEVER" styleClass="page-scroll"
+            xmlns="http://javafx.com/javafx/21" xmlns:fx="http://javafx.com/fxml/1"
+            fx:controller="com.everbloom.controller.CustomerController">
+    <content>
+        <VBox spacing="22.0" styleClass="customer-page">
+            <children>
+                <VBox spacing="5.0">
+                    <children>
+                        <Label text="Customers" styleClass="page-title" />
+                        <Label text="Keep customer details ready for every thoughtful order." styleClass="page-subtitle" />
+                    </children>
+                </VBox>
+
+                <Label fx:id="messageLabel" managed="false" text="" visible="false" styleClass="customer-message" />
+
+                <HBox alignment="TOP_LEFT" spacing="20.0">
+                    <children>
+                        <VBox spacing="16.0" HBox.hgrow="ALWAYS" styleClass="customer-list-card">
+                            <children>
+                                <HBox alignment="CENTER_LEFT" spacing="10.0">
+                                    <children>
+                                        <TextField fx:id="customerSearchField" onKeyReleased="#searchCustomers"
+                                                   promptText="Search by name or phone" styleClass="catalogue-search" />
+                                        <HBox HBox.hgrow="ALWAYS" />
+                                        <Button text="Add Customer" onAction="#addCustomer" styleClass="primary-action" />
+                                        <Button text="Edit" onAction="#editCustomer" styleClass="secondary-action" />
+                                        <Button text="Delete" onAction="#deleteCustomer" styleClass="danger-action" />
+                                    </children>
+                                </HBox>
+                                <TableView fx:id="customerTable" prefHeight="400.0" VBox.vgrow="ALWAYS" styleClass="catalogue-table">
+                                    <columns>
+                                        <TableColumn fx:id="customerNameColumn" prefWidth="220.0" text="NAME" />
+                                        <TableColumn fx:id="customerPhoneColumn" prefWidth="160.0" text="PHONE" />
+                                        <TableColumn fx:id="customerEmailColumn" prefWidth="220.0" text="EMAIL" />
+                                    </columns>
+                                </TableView>
+                            </children>
+                        </VBox>
+
+                        <VBox prefWidth="260.0" spacing="16.0" styleClass="customer-details-card">
+                            <children>
+                                <VBox spacing="4.0">
+                                    <children>
+                                        <Label text="Customer Details" styleClass="section-title" />
+                                        <Label text="Contact details for the selected customer." styleClass="section-subtitle" wrapText="true" />
+                                    </children>
+                                </VBox>
+
+                                <VBox spacing="5.0">
+                                    <children>
+                                        <Label fx:id="detailNameLabel" text="Select a customer" styleClass="customer-details-name" wrapText="true" />
+                                        <Label fx:id="detailPhoneLabel" text="—" styleClass="customer-details-value" wrapText="true" />
+                                    </children>
+                                </VBox>
+
+                                <VBox spacing="4.0">
+                                    <children>
+                                        <Label text="Email" styleClass="customer-details-label" />
+                                        <Label fx:id="detailEmailLabel" text="—" styleClass="customer-details-value" wrapText="true" />
+                                    </children>
+                                </VBox>
+
+                                <VBox spacing="4.0">
+                                    <children>
+                                        <Label text="Address" styleClass="customer-details-label" />
+                                        <Label fx:id="detailAddressLabel" text="—" styleClass="customer-details-value" wrapText="true" />
+                                    </children>
+                                </VBox>
+
+                                <VBox spacing="5.0" styleClass="customer-history-placeholder">
+                                    <children>
+                                        <Label text="Order history" styleClass="customer-details-label" />
+                                        <Label text="Available after order management is added." styleClass="customer-history-copy" wrapText="true" />
+                                    </children>
+                                </VBox>
+                            </children>
+                        </VBox>
+                    </children>
+                </HBox>
+            </children>
+        </VBox>
+    </content>
+</ScrollPane>
