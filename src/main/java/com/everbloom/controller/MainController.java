@@ -64,7 +64,7 @@ public class MainController {
 
     @FXML
     private void showOrders() {
-        showPlaceholder("Orders", ordersButton);
+        showPage(loadView("orders-view.fxml"), ordersButton);
     }
 
     @FXML
