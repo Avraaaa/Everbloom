@@ -80,6 +80,29 @@
                                         </HBox>
                                     </children>
                                 </VBox>
+
+                                <VBox spacing="11.0">
+                                    <children>
+                                        <Label text="Optional extras" styleClass="section-title" />
+                                        <HBox alignment="CENTER_LEFT" spacing="10.0">
+                                            <children>
+                                                <ComboBox fx:id="extraComboBox" promptText="Choose an extra" HBox.hgrow="ALWAYS" />
+                                                <Button text="Add Extra" onAction="#addExtra" styleClass="secondary-action" />
+                                            </children>
+                                        </HBox>
+                                        <TableView fx:id="selectedExtraTable" prefHeight="145.0" styleClass="catalogue-table">
+                                            <columns>
+                                                <TableColumn fx:id="selectedExtraNameColumn" prefWidth="330.0" text="EXTRA" />
+                                                <TableColumn fx:id="selectedExtraPriceColumn" prefWidth="160.0" text="PRICE" />
+                                            </columns>
+                                        </TableView>
+                                        <HBox>
+                                            <children>
+                                                <Button text="Remove Selected Extra" onAction="#removeSelectedExtra" styleClass="danger-action" />
+                                            </children>
+                                        </HBox>
+                                    </children>
+                                </VBox>
                             </children>
                         </VBox>
 
@@ -95,11 +118,39 @@
                                           prefHeight="300.0" wrapText="true" styleClass="bouquet-summary-area" />
                                 <HBox alignment="CENTER_LEFT" styleClass="bouquet-total-row">
                                     <children>
-                                        <Label text="Flower subtotal" styleClass="bouquet-total-label" />
+                                        <Label text="Bouquet and extras subtotal" styleClass="bouquet-total-label" />
                                         <HBox HBox.hgrow="ALWAYS" />
                                         <Label fx:id="bouquetSubtotalLabel" text="BDT 0" styleClass="bouquet-total-value" />
                                     </children>
                                 </HBox>
+                                <VBox spacing="8.0">
+                                    <children>
+                                        <Label text="Pricing policy" styleClass="section-title" />
+                                        <ComboBox fx:id="pricingPolicyComboBox" onAction="#updatePricing"
+                                                  maxWidth="Infinity" />
+                                        <HBox alignment="CENTER_LEFT" styleClass="bouquet-total-row">
+                                            <children>
+                                                <Label text="Selected policy" styleClass="bouquet-total-label" />
+                                                <HBox HBox.hgrow="ALWAYS" />
+                                                <Label fx:id="selectedPricingPolicyLabel" text="Standard Pricing" styleClass="bouquet-total-value" />
+                                            </children>
+                                        </HBox>
+                                        <HBox alignment="CENTER_LEFT" styleClass="bouquet-total-row">
+                                            <children>
+                                                <Label text="Discount" styleClass="bouquet-total-label" />
+                                                <HBox HBox.hgrow="ALWAYS" />
+                                                <Label fx:id="discountLabel" text="BDT 0" styleClass="bouquet-total-value" />
+                                            </children>
+                                        </HBox>
+                                        <HBox alignment="CENTER_LEFT" styleClass="bouquet-total-row">
+                                            <children>
+                                                <Label text="Final total" styleClass="bouquet-total-label" />
+                                                <HBox HBox.hgrow="ALWAYS" />
+                                                <Label fx:id="finalTotalLabel" text="BDT 0" styleClass="bouquet-total-value" />
+                                            </children>
+                                        </HBox>
+                                    </children>
+                                </VBox>
                             </children>
                         </VBox>
                     </children>
