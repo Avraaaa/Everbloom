@@ -79,7 +79,7 @@ public class MainController {
 
     @FXML
     private void showReports() {
-        showPlaceholder("Reports", reportsButton);
+        showPage(loadView("reports-view.fxml"), reportsButton);
     }
 
     private Parent loadView(String viewName) {

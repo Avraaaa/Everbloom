@@ -1,6 +1,7 @@
 package com.everbloom.service;
 
 import com.everbloom.model.Order;
+import com.everbloom.observer.OrderObserver;
 import com.everbloom.repository.OrderRepository;
 
 import java.sql.SQLException;
@@ -10,6 +11,7 @@ import java.util.List;
 public class OrderService {
 
     private final OrderRepository orderRepository;
+    private final List<OrderObserver> observers = new ArrayList<>();
 
     public OrderService(OrderRepository orderRepository) {
         this.orderRepository = orderRepository;
@@ -35,6 +37,24 @@ public class OrderService {
         if (order == null) throw new IllegalArgumentException("Select an order first.");
         order.advanceStatus();
         orderRepository.updateStatus(order);
+        notifyObservers(order);
+    }
+
+    public void addObserver(OrderObserver observer) {
+        if (observer == null) {
+            throw new IllegalArgumentException("Order observer is required.");
+        }
+        observers.add(observer);
+    }
+
+    public boolean removeObserver(OrderObserver observer) {
+        return observers.remove(observer);
+    }
+
+    private void notifyObservers(Order order) throws SQLException {
+        for (OrderObserver observer : observers) {
+            observer.onOrderStatusChanged(order);
+        }
     }
 
     private void validateOrder(Order order) {
