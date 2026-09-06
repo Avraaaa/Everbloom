@@ -1,6 +1,11 @@
 package com.everbloom.controller;
 
 import com.everbloom.database.DatabaseConnection;
+import com.everbloom.command.AddExtraCommand;
+import com.everbloom.command.AddFlowerCommand;
+import com.everbloom.command.CommandHistory;
+import com.everbloom.command.RemoveExtraCommand;
+import com.everbloom.command.RemoveFlowerCommand;
 import com.everbloom.model.Bouquet;
 import com.everbloom.model.BouquetBuilder;
 import com.everbloom.model.BouquetItem;
@@ -31,6 +36,7 @@ import javafx.beans.property.ReadOnlyStringWrapper;
 import javafx.collections.FXCollections;
 import javafx.fxml.FXML;
 import javafx.scene.control.ComboBox;
+import javafx.scene.control.Button;
 import javafx.scene.control.Label;
 import javafx.scene.control.Spinner;
 import javafx.scene.control.SpinnerValueFactory;
@@ -117,6 +123,12 @@ public class BouquetBuilderController {
     @FXML
     private Label messageLabel;
 
+    @FXML
+    private Button undoButton;
+
+    @FXML
+    private Button redoButton;
+
     private CustomerService customerService;
     private FlowerService flowerService;
     private ExtraService extraService;
@@ -124,6 +136,7 @@ public class BouquetBuilderController {
     private PricingService pricingService;
     private OrderService orderService;
     private BouquetBuilder bouquetBuilder;
+    private CommandHistory commandHistory;
     private final List<Extra> selectedExtras = new ArrayList<>();
 
     @FXML
@@ -136,12 +149,14 @@ public class BouquetBuilderController {
         pricingService = new PricingService();
         orderService = new OrderService(new OrderRepository(databaseConnection));
         bouquetBuilder = new BouquetBuilder();
+        commandHistory = new CommandHistory();
 
         configureControls();
         configureSelectedFlowerTable();
         configureSelectedExtraTable();
         loadOptions();
         showEmptySummary();
+        updateUndoRedoButtons();
     }
 
     @FXML
@@ -166,9 +181,11 @@ public class BouquetBuilderController {
             wrappingComboBox.setValue(template.getWrappingStyle());
             messageTextArea.setText(template.getMessage());
             selectedExtras.clear();
+            commandHistory.clear();
             refreshSelectedFlowers();
             refreshSelectedExtras();
             updateSummaryIfComplete();
+            updateUndoRedoButtons();
             showMessage("Template copied. You can now customize this bouquet.");
         } catch (IllegalArgumentException exception) {
             showMessage(exception.getMessage());
@@ -179,9 +196,8 @@ public class BouquetBuilderController {
     private void addFlower() {
         Flower selectedFlower = flowerComboBox.getValue();
         try {
-            bouquetBuilder.addFlower(selectedFlower, flowerQuantitySpinner.getValue());
-            refreshSelectedFlowers();
-            updateSummaryIfComplete();
+            commandHistory.execute(new AddFlowerCommand(bouquetBuilder, selectedFlower, flowerQuantitySpinner.getValue()));
+            refreshEditableBouquet();
             showMessage("");
         } catch (IllegalArgumentException exception) {
             showMessage(exception.getMessage());
@@ -196,9 +212,8 @@ public class BouquetBuilderController {
             return;
         }
 
-        bouquetBuilder.removeFlower(selectedFlower.getFlower());
-        refreshSelectedFlowers();
-        updateSummaryIfComplete();
+        commandHistory.execute(new RemoveFlowerCommand(bouquetBuilder, selectedFlower));
+        refreshEditableBouquet();
         showMessage("");
     }
 
@@ -214,9 +229,8 @@ public class BouquetBuilderController {
             return;
         }
 
-        selectedExtras.add(selectedExtra);
-        refreshSelectedExtras();
-        updateSummaryIfComplete();
+        commandHistory.execute(new AddExtraCommand(selectedExtras, selectedExtra));
+        refreshEditableBouquet();
         showMessage("");
     }
 
@@ -228,10 +242,25 @@ public class BouquetBuilderController {
             return;
         }
 
-        selectedExtras.remove(selectedExtra);
-        refreshSelectedExtras();
-        updateSummaryIfComplete();
+        commandHistory.execute(new RemoveExtraCommand(selectedExtras, selectedExtra));
+        refreshEditableBouquet();
         showMessage("");
+    }
+
+    @FXML
+    private void undoEdit() {
+        if (commandHistory.undo()) {
+            refreshEditableBouquet();
+            showMessage("");
+        }
+    }
+
+    @FXML
+    private void redoEdit() {
+        if (commandHistory.redo()) {
+            refreshEditableBouquet();
+            showMessage("");
+        }
     }
 
     @FXML
@@ -362,6 +391,13 @@ public class BouquetBuilderController {
         selectedExtraTable.setItems(FXCollections.observableArrayList(selectedExtras));
     }
 
+    private void refreshEditableBouquet() {
+        refreshSelectedFlowers();
+        refreshSelectedExtras();
+        updateSummaryIfComplete();
+        updateUndoRedoButtons();
+    }
+
     private void updateSummaryIfComplete() {
         try {
             Bouquet bouquet = bouquetBuilder.build();
@@ -426,6 +462,7 @@ public class BouquetBuilderController {
     private void resetBuilder() {
         bouquetBuilder = new BouquetBuilder();
         selectedExtras.clear();
+        commandHistory.clear();
         customerComboBox.setValue(null);
         templateComboBox.setValue(null);
         occasionComboBox.setValue(null);
@@ -437,6 +474,7 @@ public class BouquetBuilderController {
         refreshSelectedFlowers();
         refreshSelectedExtras();
         showEmptySummary();
+        updateUndoRedoButtons();
     }
 
     private void configureQuantitySpinner(Flower flower) {
@@ -504,6 +542,11 @@ public class BouquetBuilderController {
             }
         }
         return false;
+    }
+
+    private void updateUndoRedoButtons() {
+        undoButton.setDisable(!commandHistory.canUndo());
+        redoButton.setDisable(!commandHistory.canRedo());
     }
 
     private void showMessage(String message) {
