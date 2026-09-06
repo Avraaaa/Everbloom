@@ -11,6 +11,9 @@ import com.everbloom.model.Customer;
 import com.everbloom.model.Extra;
 import com.everbloom.model.ExtraDecorator;
 import com.everbloom.model.Flower;
+import com.everbloom.pricing.LoyaltyPricingStrategy;
+import com.everbloom.pricing.PricingStrategy;
+import com.everbloom.pricing.StandardPricingStrategy;
 import com.everbloom.repository.CustomerRepository;
 import com.everbloom.repository.ExtraRepository;
 import com.everbloom.repository.FlowerRepository;
@@ -19,6 +22,7 @@ import com.everbloom.service.CustomerService;
 import com.everbloom.service.ExtraService;
 import com.everbloom.service.FlowerService;
 import com.everbloom.service.BouquetTemplateService;
+import com.everbloom.service.PricingService;
 import javafx.beans.property.ReadOnlyObjectWrapper;
 import javafx.beans.property.ReadOnlyStringWrapper;
 import javafx.collections.FXCollections;
@@ -75,6 +79,9 @@ public class BouquetBuilderController {
     private ComboBox<Extra> extraComboBox;
 
     @FXML
+    private ComboBox<String> pricingPolicyComboBox;
+
+    @FXML
     private TableView<Extra> selectedExtraTable;
 
     @FXML
@@ -90,12 +97,22 @@ public class BouquetBuilderController {
     private Label bouquetSubtotalLabel;
 
     @FXML
+    private Label selectedPricingPolicyLabel;
+
+    @FXML
+    private Label discountLabel;
+
+    @FXML
+    private Label finalTotalLabel;
+
+    @FXML
     private Label messageLabel;
 
     private CustomerService customerService;
     private FlowerService flowerService;
     private ExtraService extraService;
     private BouquetTemplateService templateService;
+    private PricingService pricingService;
     private BouquetBuilder bouquetBuilder;
     private final List<Extra> selectedExtras = new ArrayList<>();
 
@@ -106,6 +123,7 @@ public class BouquetBuilderController {
         flowerService = new FlowerService(new FlowerRepository(databaseConnection));
         extraService = new ExtraService(new ExtraRepository(databaseConnection));
         templateService = new BouquetTemplateService(new BouquetTemplateRepository(databaseConnection));
+        pricingService = new PricingService();
         bouquetBuilder = new BouquetBuilder();
 
         configureControls();
@@ -117,6 +135,12 @@ public class BouquetBuilderController {
 
     @FXML
     private void updateBouquetOptions() {
+        synchronizeBuilderOptions();
+        updateSummaryIfComplete();
+    }
+
+    @FXML
+    private void updatePricing() {
         synchronizeBuilderOptions();
         updateSummaryIfComplete();
     }
@@ -220,6 +244,8 @@ public class BouquetBuilderController {
                 "No wrapping", "Kraft paper", "Premium paper", "White paper"
         ));
         wrappingComboBox.setValue("No wrapping");
+        pricingPolicyComboBox.setItems(FXCollections.observableArrayList("Standard Pricing", "Loyalty Pricing"));
+        pricingPolicyComboBox.setValue("Standard Pricing");
         flowerQuantitySpinner.setValueFactory(new SpinnerValueFactory.IntegerSpinnerValueFactory(1, 1, 1));
 
         customerComboBox.setConverter(customerConverter());
@@ -318,15 +344,35 @@ public class BouquetBuilderController {
     }
 
     private void showBouquetSummary(Bouquet bouquet, BouquetItem bouquetItem) {
+        PricingStrategy pricingStrategy = getSelectedPricingStrategy();
+        long subtotal = bouquetItem.getSubtotal();
+        long discount = pricingService.calculateDiscount(bouquetItem, pricingStrategy);
+        long finalTotal = pricingService.calculateFinalTotal(bouquetItem, pricingStrategy);
         bouquetSummaryArea.setText(bouquet.getSummary()
                 + "\n\nSelection: " + bouquetItem.getDescription()
-                + "\nCurrent subtotal: " + formatPrice(bouquetItem.getSubtotal()));
-        bouquetSubtotalLabel.setText(formatPrice(bouquetItem.getSubtotal()));
+                + "\nBouquet and extras subtotal: " + formatPrice(subtotal)
+                + "\nPricing policy: " + pricingStrategy.getName()
+                + "\nDiscount: " + formatPrice(discount)
+                + "\nFinal total: " + formatPrice(finalTotal));
+        bouquetSubtotalLabel.setText(formatPrice(subtotal));
+        selectedPricingPolicyLabel.setText(pricingStrategy.getName());
+        discountLabel.setText(formatPrice(discount));
+        finalTotalLabel.setText(formatPrice(finalTotal));
     }
 
     private void showEmptySummary() {
         bouquetSummaryArea.setText("Select a customer and occasion, then add flowers to preview the bouquet.");
         bouquetSubtotalLabel.setText("BDT 0");
+        selectedPricingPolicyLabel.setText("Standard Pricing");
+        discountLabel.setText("BDT 0");
+        finalTotalLabel.setText("BDT 0");
+    }
+
+    private PricingStrategy getSelectedPricingStrategy() {
+        if ("Loyalty Pricing".equals(pricingPolicyComboBox.getValue())) {
+            return new LoyaltyPricingStrategy();
+        }
+        return new StandardPricingStrategy();
     }
 
     private void configureQuantitySpinner(Flower flower) {
