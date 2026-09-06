@@ -39,6 +39,12 @@ class PricingServiceTest {
         assertEquals(0, pricingService.calculateDiscount(bouquetItem, new LoyaltyPricingStrategy()));
     }
 
+    @Test
+    void pricesAnEventPackageSubtotalWithTheExistingStrategy() {
+        assertEquals(18000, pricingService.calculateFinalTotal(20000, new LoyaltyPricingStrategy()));
+        assertEquals(2000, pricingService.calculateDiscount(20000, new LoyaltyPricingStrategy()));
+    }
+
     private static class TestBouquetItem implements BouquetItem {
 
         private final long subtotal;

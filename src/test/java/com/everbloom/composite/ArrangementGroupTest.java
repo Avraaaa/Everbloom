@@ -1,6 +1,9 @@
 package com.everbloom.composite;
 import com.everbloom.model.BouquetItem;
 import org.junit.jupiter.api.Test;
+
+import java.util.List;
+
 import static org.junit.jupiter.api.Assertions.*;
 class ArrangementGroupTest {
     @Test void calculatesNestedPackageTotalAndSummary() {
@@ -14,6 +17,7 @@ class ArrangementGroupTest {
         assertEquals(39000, wedding.getTotalPrice());
         assertTrue(wedding.getSummary().contains("Ceremony"));
         assertTrue(wedding.getSummary().contains("Bridal Bouquet: BDT 12000"));
+        assertEquals(List.of(wedding, ceremony, reception), wedding.getAllGroups());
     }
     private BouquetItem item(long price) { return new BouquetItem() { public String getDescription() { return "Bouquet"; } public long getSubtotal() { return price; } }; }
 }

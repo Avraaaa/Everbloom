@@ -8,6 +8,7 @@
 <?import javafx.scene.control.TableColumn?>
 <?import javafx.scene.control.TableView?>
 <?import javafx.scene.control.TextArea?>
+<?import javafx.scene.control.TextField?>
 <?import javafx.scene.layout.HBox?>
 <?import javafx.scene.layout.VBox?>
 
@@ -30,6 +31,41 @@
                     <children>
                         <VBox spacing="18.0" HBox.hgrow="ALWAYS" styleClass="bouquet-builder-card">
                             <children>
+                                <VBox spacing="11.0">
+                                    <children>
+                                        <Label text="Order mode" styleClass="section-title" />
+                                        <ComboBox fx:id="orderModeComboBox" onAction="#updateOrderMode"
+                                                  maxWidth="Infinity" />
+                                    </children>
+                                </VBox>
+
+                                <VBox fx:id="eventPackagePane" managed="false" visible="false" spacing="11.0">
+                                    <children>
+                                        <Label text="Event package" styleClass="section-title" />
+                                        <HBox spacing="10.0">
+                                            <children>
+                                                <TextField fx:id="packageNameField" promptText="Package name" HBox.hgrow="ALWAYS" />
+                                                <Button text="Create Package" onAction="#createEventPackage" styleClass="secondary-action" />
+                                            </children>
+                                        </HBox>
+                                        <ComboBox fx:id="eventGroupComboBox" promptText="Select parent group" maxWidth="Infinity" />
+                                        <HBox spacing="10.0">
+                                            <children>
+                                                <TextField fx:id="groupNameField" promptText="New group or subgroup name" HBox.hgrow="ALWAYS" />
+                                                <Button text="Add Group" onAction="#addEventGroup" styleClass="secondary-action" />
+                                            </children>
+                                        </HBox>
+                                        <HBox spacing="10.0">
+                                            <children>
+                                                <TextField fx:id="arrangementNameField" promptText="Arrangement name" HBox.hgrow="ALWAYS" />
+                                                <Button text="Add Current Bouquet" onAction="#addEventArrangement" styleClass="primary-action" />
+                                            </children>
+                                        </HBox>
+                                        <Label text="Choose a group, build a bouquet below, then add it as an arrangement."
+                                               styleClass="section-subtitle" wrapText="true" />
+                                    </children>
+                                </VBox>
+
                                 <VBox spacing="11.0">
                                     <children>
                                         <Label text="Bouquet details" styleClass="section-title" />
@@ -110,15 +146,15 @@
                             <children>
                                 <VBox spacing="4.0">
                                     <children>
-                                        <Label text="Current Bouquet" styleClass="section-title" />
-                                        <Label text="A preview only. Orders are not saved yet." styleClass="section-subtitle" wrapText="true" />
+                                        <Label text="Order Summary" styleClass="section-title" />
+                                        <Label text="Preview the bouquet or nested event package before saving." styleClass="section-subtitle" wrapText="true" />
                                     </children>
                                 </VBox>
                                 <TextArea fx:id="bouquetSummaryArea" editable="false" focusTraversable="false"
                                           prefHeight="300.0" wrapText="true" styleClass="bouquet-summary-area" />
                                 <HBox alignment="CENTER_LEFT" styleClass="bouquet-total-row">
                                     <children>
-                                        <Label text="Bouquet and extras subtotal" styleClass="bouquet-total-label" />
+                                        <Label text="Order subtotal" styleClass="bouquet-total-label" />
                                         <HBox HBox.hgrow="ALWAYS" />
                                         <Label fx:id="bouquetSubtotalLabel" text="BDT 0" styleClass="bouquet-total-value" />
                                     </children>

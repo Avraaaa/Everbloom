@@ -15,6 +15,14 @@ public class ArrangementGroup implements EventPackageComponent {
         children.add(component);
     }
     public List<EventPackageComponent> getChildren() { return List.copyOf(children); }
+    public List<ArrangementGroup> getAllGroups() {
+        List<ArrangementGroup> groups = new ArrayList<>();
+        groups.add(this);
+        for (EventPackageComponent child : children) {
+            if (child instanceof ArrangementGroup group) groups.addAll(group.getAllGroups());
+        }
+        return List.copyOf(groups);
+    }
     public String getName() { return name; }
     public long getTotalPrice() { long total = 0; for (EventPackageComponent child : children) total += child.getTotalPrice(); return total; }
     public String getSummary() { StringBuilder summary = new StringBuilder(name).append("\n"); appendChildren(summary, "", children); return summary.toString().trim(); }
@@ -24,4 +32,5 @@ public class ArrangementGroup implements EventPackageComponent {
             if (component instanceof ArrangementGroup group) appendChildren(summary, indent + "  ", group.children);
         }
     }
+    @Override public String toString() { return name; }
 }
