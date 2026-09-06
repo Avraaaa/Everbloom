@@ -1,5 +1,7 @@
 package com.everbloom.controller;
 
+import com.everbloom.composite.ArrangementGroup;
+import com.everbloom.composite.BouquetArrangement;
 import com.everbloom.database.DatabaseConnection;
 import com.everbloom.command.AddExtraCommand;
 import com.everbloom.command.AddFlowerCommand;
@@ -43,6 +45,8 @@ import javafx.scene.control.SpinnerValueFactory;
 import javafx.scene.control.TableColumn;
 import javafx.scene.control.TableView;
 import javafx.scene.control.TextArea;
+import javafx.scene.control.TextField;
+import javafx.scene.layout.VBox;
 import javafx.util.StringConverter;
 
 import java.sql.SQLException;
@@ -86,6 +90,24 @@ public class BouquetBuilderController {
 
     @FXML
     private ComboBox<Extra> extraComboBox;
+
+    @FXML
+    private ComboBox<String> orderModeComboBox;
+
+    @FXML
+    private VBox eventPackagePane;
+
+    @FXML
+    private TextField packageNameField;
+
+    @FXML
+    private TextField groupNameField;
+
+    @FXML
+    private ComboBox<ArrangementGroup> eventGroupComboBox;
+
+    @FXML
+    private TextField arrangementNameField;
 
     @FXML
     private ComboBox<String> pricingPolicyComboBox;
@@ -136,6 +158,7 @@ public class BouquetBuilderController {
     private PricingService pricingService;
     private OrderService orderService;
     private BouquetBuilder bouquetBuilder;
+    private ArrangementGroup eventPackage;
     private CommandHistory commandHistory;
     private final List<Extra> selectedExtras = new ArrayList<>();
 
@@ -168,7 +191,75 @@ public class BouquetBuilderController {
     @FXML
     private void updatePricing() {
         synchronizeBuilderOptions();
-        updateSummaryIfComplete();
+        if (isEventPackageMode()) {
+            updateEventPackagePreview();
+        } else {
+            updateSummaryIfComplete();
+        }
+    }
+
+    @FXML
+    private void updateOrderMode() {
+        boolean eventMode = isEventPackageMode();
+        eventPackagePane.setManaged(eventMode);
+        eventPackagePane.setVisible(eventMode);
+        if (eventMode) {
+            updateEventPackagePreview();
+        } else {
+            updateSummaryIfComplete();
+        }
+        showMessage("");
+    }
+
+    @FXML
+    private void createEventPackage() {
+        String packageName = packageNameField.getText();
+        try {
+            eventPackage = new ArrangementGroup(packageName == null ? "" : packageName.trim());
+            refreshEventGroups();
+            eventGroupComboBox.setValue(eventPackage);
+            updateEventPackagePreview();
+            showMessage("Event package created. Add groups or arrangements.");
+        } catch (IllegalArgumentException exception) {
+            showMessage(exception.getMessage());
+        }
+    }
+
+    @FXML
+    private void addEventGroup() {
+        try {
+            ArrangementGroup parent = getSelectedEventGroup();
+            String groupName = groupNameField.getText();
+            ArrangementGroup group = new ArrangementGroup(groupName == null ? "" : groupName.trim());
+            parent.add(group);
+            groupNameField.clear();
+            refreshEventGroups();
+            eventGroupComboBox.setValue(group);
+            updateEventPackagePreview();
+            showMessage("Group added to " + parent.getName() + ".");
+        } catch (IllegalArgumentException exception) {
+            showMessage(exception.getMessage());
+        }
+    }
+
+    @FXML
+    private void addEventArrangement() {
+        synchronizeBuilderOptions();
+        try {
+            ArrangementGroup group = getSelectedEventGroup();
+            String arrangementName = arrangementNameField.getText();
+            if (arrangementName == null || arrangementName.isBlank()) {
+                throw new IllegalArgumentException("Arrangement name is required.");
+            }
+            Bouquet bouquet = bouquetBuilder.build();
+            group.add(new BouquetArrangement(arrangementName.trim(), decorateBouquet(bouquet)));
+            arrangementNameField.clear();
+            updateEventPackagePreview();
+            resetCurrentBouquet();
+            showMessage("Arrangement added to " + group.getName() + ".");
+        } catch (IllegalArgumentException exception) {
+            showMessage(exception.getMessage());
+        }
     }
 
     @FXML
@@ -278,6 +369,14 @@ public class BouquetBuilderController {
 
     @FXML
     private void placeOrder() {
+        if (isEventPackageMode()) {
+            placeEventPackage();
+            return;
+        }
+        placeSingleBouquetOrder();
+    }
+
+    private void placeSingleBouquetOrder() {
         synchronizeBuilderOptions();
         try {
             Bouquet bouquet = bouquetBuilder.build();
@@ -299,7 +398,36 @@ public class BouquetBuilderController {
         }
     }
 
+    private void placeEventPackage() {
+        try {
+            if (eventPackage == null) {
+                throw new IllegalArgumentException("Create an event package first.");
+            }
+            PricingStrategy pricingStrategy = getSelectedPricingStrategy();
+            long subtotal = eventPackage.getTotalPrice();
+            long discount = pricingService.calculateDiscount(subtotal, pricingStrategy);
+            long total = pricingService.calculateFinalTotal(subtotal, pricingStrategy);
+            Order order = new Order(createOrderNumber(), customerComboBox.getValue(), null, List.of(),
+                    fulfillmentComboBox.getValue(), getDeliveryAddress(), pricingStrategy.getName(),
+                    subtotal, discount, total);
+            Order savedOrder = orderService.placeEventPackage(order, eventPackage);
+            eventPackage = orderService.findEventPackage(savedOrder.getId())
+                    .orElseThrow(() -> new SQLException("Saved event package could not be reloaded."));
+            packageNameField.setText(eventPackage.getName());
+            refreshEventGroups();
+            eventGroupComboBox.setValue(eventPackage);
+            updateEventPackagePreview();
+            showMessage("Event package order " + savedOrder.getOrderNumber() + " saved and reloaded successfully.");
+        } catch (IllegalArgumentException exception) {
+            showMessage(exception.getMessage());
+        } catch (SQLException exception) {
+            showMessage("Unable to place the event package order. Please try again.");
+        }
+    }
+
     private void configureControls() {
+        orderModeComboBox.setItems(FXCollections.observableArrayList("Single Bouquet", "Event Package"));
+        orderModeComboBox.setValue("Single Bouquet");
         occasionComboBox.setItems(FXCollections.observableArrayList(
                 "Birthday", "Anniversary", "Thank You", "Congratulations", "Just Because"
         ));
@@ -399,6 +527,10 @@ public class BouquetBuilderController {
     }
 
     private void updateSummaryIfComplete() {
+        if (isEventPackageMode()) {
+            updateEventPackagePreview();
+            return;
+        }
         try {
             Bouquet bouquet = bouquetBuilder.build();
             showBouquetSummary(bouquet, decorateBouquet(bouquet));
@@ -432,6 +564,44 @@ public class BouquetBuilderController {
         finalTotalLabel.setText(formatPrice(finalTotal));
     }
 
+    private void updateEventPackagePreview() {
+        PricingStrategy pricingStrategy = getSelectedPricingStrategy();
+        long subtotal = eventPackage == null ? 0 : eventPackage.getTotalPrice();
+        long discount = pricingService.calculateDiscount(subtotal, pricingStrategy);
+        long finalTotal = pricingService.calculateFinalTotal(subtotal, pricingStrategy);
+        String summary = eventPackage == null
+                ? "Enter a package name, then create the event package."
+                : eventPackage.getSummary();
+        bouquetSummaryArea.setText(summary
+                + "\n\nPricing policy: " + pricingStrategy.getName()
+                + "\nDiscount: " + formatPrice(discount)
+                + "\nFinal total: " + formatPrice(finalTotal));
+        bouquetSubtotalLabel.setText(formatPrice(subtotal));
+        selectedPricingPolicyLabel.setText(pricingStrategy.getName());
+        discountLabel.setText(formatPrice(discount));
+        finalTotalLabel.setText(formatPrice(finalTotal));
+    }
+
+    private ArrangementGroup getSelectedEventGroup() {
+        if (eventPackage == null) {
+            throw new IllegalArgumentException("Create an event package first.");
+        }
+        ArrangementGroup group = eventGroupComboBox.getValue();
+        return group == null ? eventPackage : group;
+    }
+
+    private void refreshEventGroups() {
+        if (eventPackage == null) {
+            eventGroupComboBox.getItems().clear();
+            return;
+        }
+        eventGroupComboBox.setItems(FXCollections.observableArrayList(eventPackage.getAllGroups()));
+    }
+
+    private boolean isEventPackageMode() {
+        return "Event Package".equals(orderModeComboBox.getValue());
+    }
+
     private void showEmptySummary() {
         bouquetSummaryArea.setText("Select a customer and occasion, then add flowers to preview the bouquet.");
         bouquetSubtotalLabel.setText("BDT 0");
@@ -460,20 +630,25 @@ public class BouquetBuilderController {
     }
 
     private void resetBuilder() {
-        bouquetBuilder = new BouquetBuilder();
-        selectedExtras.clear();
-        commandHistory.clear();
         customerComboBox.setValue(null);
+        resetCurrentBouquet();
+        fulfillmentComboBox.setValue("PICKUP");
+        deliveryAddressTextArea.clear();
+        pricingPolicyComboBox.setValue("Standard Pricing");
+        showEmptySummary();
+    }
+
+    private void resetCurrentBouquet() {
+        Customer customer = customerComboBox.getValue();
+        bouquetBuilder = new BouquetBuilder().forCustomer(customer);
+        selectedExtras.clear();
         templateComboBox.setValue(null);
         occasionComboBox.setValue(null);
         wrappingComboBox.setValue("No wrapping");
         messageTextArea.clear();
-        fulfillmentComboBox.setValue("PICKUP");
-        deliveryAddressTextArea.clear();
-        pricingPolicyComboBox.setValue("Standard Pricing");
         refreshSelectedFlowers();
         refreshSelectedExtras();
-        showEmptySummary();
+        commandHistory.clear();
         updateUndoRedoButtons();
     }
 

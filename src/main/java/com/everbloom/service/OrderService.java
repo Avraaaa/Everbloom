@@ -7,6 +7,8 @@ import com.everbloom.repository.OrderRepository;
 import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Optional;
+import com.everbloom.composite.ArrangementGroup;
 
 public class OrderService {
 
@@ -20,6 +22,35 @@ public class OrderService {
     public Order placeOrder(Order order) throws SQLException {
         validateOrder(order);
         return orderRepository.create(order);
+    }
+
+    public Order placeEventPackage(Order order, ArrangementGroup eventPackage) throws SQLException {
+        validateEventPackage(order, eventPackage);
+        return orderRepository.createEventPackage(order, eventPackage);
+    }
+
+    public Optional<ArrangementGroup> findEventPackage(long orderId) throws SQLException {
+        return orderRepository.findEventPackage(orderId);
+    }
+
+    private void validateEventPackage(Order order, ArrangementGroup eventPackage) {
+        if (order == null || order.getCustomer() == null || order.getCustomer().getId() <= 0) {
+            throw new IllegalArgumentException("Select a saved customer for the event package.");
+        }
+        if (eventPackage == null || eventPackage.getChildren().isEmpty()) {
+            throw new IllegalArgumentException("Add at least one arrangement to the event package.");
+        }
+        if (order.getSubtotal() != eventPackage.getTotalPrice()
+                || order.getTotal() != order.getSubtotal() - order.getDiscount()) {
+            throw new IllegalArgumentException("Event package pricing is invalid.");
+        }
+        if (!"PICKUP".equals(order.getFulfillmentType()) && !"DELIVERY".equals(order.getFulfillmentType())) {
+            throw new IllegalArgumentException("Select pickup or delivery.");
+        }
+        if ("DELIVERY".equals(order.getFulfillmentType())
+                && (order.getDeliveryAddress() == null || order.getDeliveryAddress().isBlank())) {
+            throw new IllegalArgumentException("Enter a delivery address.");
+        }
     }
 
     public List<Order> findOrders(String searchText, String status) throws SQLException {
