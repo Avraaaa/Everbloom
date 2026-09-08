@@ -28,6 +28,7 @@ import javafx.scene.control.SpinnerValueFactory;
 import javafx.scene.control.TableColumn;
 import javafx.scene.control.TableView;
 import javafx.scene.control.TextField;
+import javafx.geometry.Insets;
 import javafx.scene.layout.GridPane;
 import javafx.scene.layout.HBox;
 import javafx.scene.layout.VBox;
@@ -141,7 +142,7 @@ public class CatalogueController {
             try {
                 flowerService.create(flower);
                 loadFlowers();
-                showMessage("Flower added successfully.");
+                showSuccess("Flower added successfully.");
             } catch (IllegalArgumentException | SQLException exception) {
                 showMessage(readableMessage(exception, "Unable to add the flower."));
             }
@@ -160,7 +161,7 @@ public class CatalogueController {
             try {
                 flowerService.update(flower);
                 loadFlowers();
-                showMessage("Flower updated successfully.");
+                showSuccess("Flower updated successfully.");
             } catch (IllegalArgumentException | SQLException exception) {
                 showMessage(readableMessage(exception, "Unable to update the flower."));
             }
@@ -182,7 +183,7 @@ public class CatalogueController {
         try {
             if (flowerService.delete(selectedFlower.getId())) {
                 loadFlowers();
-                showMessage("Flower deleted successfully.");
+                showSuccess("Flower deleted successfully.");
             } else {
                 showMessage("The selected flower no longer exists.");
             }
@@ -197,7 +198,7 @@ public class CatalogueController {
             try {
                 extraService.create(extra);
                 loadExtras();
-                showMessage("Extra added successfully.");
+                showSuccess("Extra added successfully.");
             } catch (IllegalArgumentException | SQLException exception) {
                 showMessage(readableMessage(exception, "Unable to add the extra."));
             }
@@ -216,7 +217,7 @@ public class CatalogueController {
             try {
                 extraService.update(extra);
                 loadExtras();
-                showMessage("Extra updated successfully.");
+                showSuccess("Extra updated successfully.");
             } catch (IllegalArgumentException | SQLException exception) {
                 showMessage(readableMessage(exception, "Unable to update the extra."));
             }
@@ -238,7 +239,7 @@ public class CatalogueController {
         try {
             if (extraService.delete(selectedExtra.getId())) {
                 loadExtras();
-                showMessage("Extra deleted successfully.");
+                showSuccess("Extra deleted successfully.");
             } else {
                 showMessage("The selected extra no longer exists.");
             }
@@ -253,7 +254,7 @@ public class CatalogueController {
             try {
                 templateService.create(template);
                 loadTemplates();
-                showMessage("Bouquet template added successfully.");
+                showSuccess("Bouquet template added successfully.");
             } catch (IllegalArgumentException | SQLException exception) {
                 showMessage(readableMessage(exception, "Unable to add the bouquet template."));
             }
@@ -271,7 +272,7 @@ public class CatalogueController {
             try {
                 if (templateService.update(template)) {
                     loadTemplates();
-                    showMessage("Bouquet template updated successfully.");
+                    showSuccess("Bouquet template updated successfully.");
                 } else {
                     showMessage("The selected bouquet template no longer exists.");
                 }
@@ -279,6 +280,30 @@ public class CatalogueController {
                 showMessage(readableMessage(exception, "Unable to update the bouquet template."));
             }
         });
+    }
+
+    @FXML
+    private void deleteTemplate() {
+        BouquetTemplate selectedTemplate = templateTable.getSelectionModel().getSelectedItem();
+        if (selectedTemplate == null) {
+            showMessage("Select a bouquet template to delete.");
+            return;
+        }
+
+        if (!confirmDeletion("bouquet template", selectedTemplate.getName())) {
+            return;
+        }
+
+        try {
+            if (templateService.delete(selectedTemplate.getId())) {
+                loadTemplates();
+                showSuccess("Bouquet template deleted successfully.");
+            } else {
+                showMessage("The selected bouquet template no longer exists.");
+            }
+        } catch (SQLException exception) {
+            showMessage("This bouquet template cannot be deleted right now.");
+        }
     }
 
     private void configureFlowerTable() {
@@ -463,6 +488,7 @@ public class CatalogueController {
         dialog.setTitle(template == null ? "Add Bouquet Template" : "Edit Bouquet Template");
         dialog.getDialogPane().setContent(content);
         dialog.getDialogPane().getButtonTypes().addAll(saveButtonType, ButtonType.CANCEL);
+        applyDialogStyle(dialog.getDialogPane());
         Button saveButton = (Button) dialog.getDialogPane().lookupButton(saveButtonType);
         saveButton.addEventFilter(javafx.event.ActionEvent.ACTION, event -> {
             if (nameField.getText().isBlank() || occasionField.getText().isBlank()
@@ -493,6 +519,7 @@ public class CatalogueController {
         dialog.setTitle(title);
         dialog.getDialogPane().setContent(form);
         dialog.getDialogPane().getButtonTypes().addAll(saveButtonType, ButtonType.CANCEL);
+        applyDialogStyle(dialog.getDialogPane());
 
         Button saveButton = (Button) dialog.getDialogPane().lookupButton(saveButtonType);
         FormValue<T> formValue = new FormValue<>();
@@ -513,7 +540,14 @@ public class CatalogueController {
         form.setHgap(12);
         form.setVgap(10);
         form.setPrefWidth(360);
+        form.setPadding(new Insets(18, 18, 6, 18));
         return form;
+    }
+
+    private void applyDialogStyle(javafx.scene.control.DialogPane dialogPane) {
+        dialogPane.getStylesheets().add(
+                java.util.Objects.requireNonNull(getClass().getResource("/com/everbloom/css/app.css")).toExternalForm());
+        dialogPane.getStyleClass().add("app-dialog");
     }
 
     private boolean confirmDeletion(String itemType, String itemName) {
@@ -521,6 +555,7 @@ public class CatalogueController {
         alert.setTitle("Delete " + itemType);
         alert.setHeaderText("Delete " + itemName + "?");
         alert.setContentText("This action cannot be undone.");
+        applyDialogStyle(alert.getDialogPane());
         Optional<ButtonType> result = alert.showAndWait();
         return result.isPresent() && result.get() == ButtonType.OK;
     }
@@ -567,13 +602,32 @@ public class CatalogueController {
     }
 
     private void showMessage(String message) {
+        messageLabel.getStyleClass().remove("message-success");
         messageLabel.setText(message);
         messageLabel.setVisible(!message.isBlank());
         messageLabel.setManaged(!message.isBlank());
     }
 
+    private void showSuccess(String message) {
+        showMessage(message);
+        messageLabel.getStyleClass().add("message-success");
+    }
+
     private String readableMessage(Exception exception, String fallbackMessage) {
-        return exception.getMessage() == null || exception.getMessage().isBlank() ? fallbackMessage : exception.getMessage();
+        String message = exception.getMessage();
+        if (message == null || message.isBlank()) {
+            return fallbackMessage;
+        }
+        if (message.contains("UNIQUE constraint failed: flowers.name")) {
+            return "A flower with this name already exists.";
+        }
+        if (message.contains("UNIQUE constraint failed: extras.name")) {
+            return "An extra with this name already exists.";
+        }
+        if (message.contains("UNIQUE constraint failed: bouquet_templates.name")) {
+            return "A bouquet template with this name already exists.";
+        }
+        return message;
     }
 
     @FunctionalInterface

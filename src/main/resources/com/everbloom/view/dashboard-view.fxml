@@ -5,26 +5,100 @@
 <?import javafx.scene.control.ScrollPane?>
 <?import javafx.scene.control.TableColumn?>
 <?import javafx.scene.control.TableView?>
-<?import javafx.scene.layout.ColumnConstraints?>
-<?import javafx.scene.layout.GridPane?>
 <?import javafx.scene.layout.HBox?>
 <?import javafx.scene.layout.Region?>
 <?import javafx.scene.layout.VBox?>
 
-<ScrollPane xmlns="http://javafx.com/javafx/21" xmlns:fx="http://javafx.com/fxml/1" fx:controller="com.everbloom.controller.DashboardController" fitToWidth="true" hbarPolicy="NEVER" styleClass="page-scroll">
+<ScrollPane xmlns="http://javafx.com/javafx/21" xmlns:fx="http://javafx.com/fxml/1"
+            fx:controller="com.everbloom.controller.DashboardController"
+            fitToWidth="true" hbarPolicy="AS_NEEDED" styleClass="page-scroll">
     <content>
         <VBox spacing="22.0" styleClass="dashboard-page">
             <children>
-                <HBox alignment="CENTER_LEFT"><children><VBox spacing="6.0"><children><Label text="Dashboard" styleClass="page-title" /><Label text="A current overview of your flower shop." styleClass="page-subtitle" /></children></VBox><Region HBox.hgrow="ALWAYS" /><Button text="Refresh" onAction="#refreshDashboard" styleClass="secondary-action" /></children></HBox>
+                <HBox alignment="CENTER_LEFT" spacing="16.0">
+                    <children>
+                        <VBox spacing="6.0">
+                            <children>
+                                <Label text="Dashboard" styleClass="page-title" />
+                                <Label text="A current overview of your flower shop." styleClass="page-subtitle" />
+                            </children>
+                        </VBox>
+                        <Region HBox.hgrow="ALWAYS" />
+                        <Button text="Refresh" onAction="#refreshDashboard" styleClass="secondary-action" />
+                    </children>
+                </HBox>
+
                 <Label fx:id="messageLabel" managed="false" visible="false" styleClass="dashboard-message" />
-                <GridPane hgap="16.0" styleClass="summary-grid"><columnConstraints><ColumnConstraints percentWidth="25.0" hgrow="ALWAYS" /><ColumnConstraints percentWidth="25.0" hgrow="ALWAYS" /><ColumnConstraints percentWidth="25.0" hgrow="ALWAYS" /><ColumnConstraints percentWidth="25.0" hgrow="ALWAYS" /></columnConstraints><children>
-                    <VBox GridPane.columnIndex="0" spacing="10.0" styleClass="summary-card,card-orders"><children><Label text="Today's Orders" styleClass="card-label" /><Label fx:id="todayOrdersLabel" text="0" styleClass="card-value" /><Label text="Placed today" styleClass="card-detail" /></children></VBox>
-                    <VBox GridPane.columnIndex="1" spacing="10.0" styleClass="summary-card,card-active"><children><Label text="Ready Orders" styleClass="card-label" /><Label fx:id="readyOrdersLabel" text="0" styleClass="card-value" /><Label text="Ready for fulfilment" styleClass="card-detail" /></children></VBox>
-                    <VBox GridPane.columnIndex="2" spacing="10.0" styleClass="summary-card,card-ready"><children><Label text="Today's Revenue" styleClass="card-label" /><Label fx:id="todayRevenueLabel" text="BDT 0.00" styleClass="card-value" /><Label text="Placed today" styleClass="card-detail" /></children></VBox>
-                    <VBox GridPane.columnIndex="3" spacing="10.0" styleClass="summary-card,card-customers"><children><Label text="Customers" styleClass="card-label" /><Label fx:id="customerCountLabel" text="0" styleClass="card-value" /><Label text="Saved customer records" styleClass="card-detail" /></children></VBox>
-                </children></GridPane>
-                <VBox spacing="14.0" styleClass="recent-orders-card"><children><VBox spacing="4.0"><children><Label text="Recent Orders" styleClass="section-title" /><Label text="Latest placed orders and their current lifecycle status." styleClass="section-subtitle" /></children></VBox><TableView fx:id="recentOrdersTable" prefHeight="260.0" styleClass="recent-orders-table"><columns><TableColumn fx:id="orderNumberColumn" text="ORDER" prefWidth="125.0" /><TableColumn fx:id="customerColumn" text="CUSTOMER" prefWidth="190.0" /><TableColumn fx:id="occasionColumn" text="OCCASION" prefWidth="150.0" /><TableColumn fx:id="statusColumn" text="STATUS" prefWidth="135.0" /><TableColumn fx:id="amountColumn" text="AMOUNT" prefWidth="120.0" /></columns></TableView></children></VBox>
-                <VBox spacing="14.0" styleClass="recent-orders-card"><children><VBox spacing="4.0"><children><Label text="Recent Notifications" styleClass="section-title" /><Label text="Created after successful order status changes." styleClass="section-subtitle" /></children></VBox><TableView fx:id="notificationsTable" prefHeight="180.0" styleClass="recent-orders-table"><columns><TableColumn fx:id="notificationColumn" text="MESSAGE" prefWidth="520.0" /><TableColumn fx:id="notificationStatusColumn" text="STATUS" prefWidth="140.0" /></columns></TableView></children></VBox>
+
+                <HBox spacing="16.0" styleClass="summary-grid">
+                    <children>
+                        <VBox spacing="10.0" maxWidth="Infinity" HBox.hgrow="ALWAYS" styleClass="summary-card,card-orders">
+                            <children>
+                                <Label text="Today's Orders" styleClass="card-label" />
+                                <Label fx:id="todayOrdersLabel" text="0" styleClass="card-value" />
+                                <Label text="Placed today" styleClass="card-detail" />
+                            </children>
+                        </VBox>
+                        <VBox spacing="10.0" maxWidth="Infinity" HBox.hgrow="ALWAYS" styleClass="summary-card,card-active">
+                            <children>
+                                <Label text="Ready Orders" styleClass="card-label" />
+                                <Label fx:id="readyOrdersLabel" text="0" styleClass="card-value" />
+                                <Label text="Ready for fulfilment" styleClass="card-detail" />
+                            </children>
+                        </VBox>
+                        <VBox spacing="10.0" maxWidth="Infinity" HBox.hgrow="ALWAYS" styleClass="summary-card,card-ready">
+                            <children>
+                                <Label text="Today's Revenue" styleClass="card-label" />
+                                <Label fx:id="todayRevenueLabel" text="BDT 0.00" styleClass="card-value" />
+                                <Label text="Placed today" styleClass="card-detail" />
+                            </children>
+                        </VBox>
+                        <VBox spacing="10.0" maxWidth="Infinity" HBox.hgrow="ALWAYS" styleClass="summary-card,card-customers">
+                            <children>
+                                <Label text="Customers" styleClass="card-label" />
+                                <Label fx:id="customerCountLabel" text="0" styleClass="card-value" />
+                                <Label text="Saved customer records" styleClass="card-detail" />
+                            </children>
+                        </VBox>
+                    </children>
+                </HBox>
+
+                <VBox spacing="14.0" styleClass="recent-orders-card">
+                    <children>
+                        <VBox spacing="4.0">
+                            <children>
+                                <Label text="Recent Orders" styleClass="section-title" />
+                                <Label text="Latest placed orders and their current lifecycle status." styleClass="section-subtitle" />
+                            </children>
+                        </VBox>
+                        <TableView fx:id="recentOrdersTable" prefHeight="260.0" styleClass="recent-orders-table">
+                            <columns>
+                                <TableColumn fx:id="orderNumberColumn" text="ORDER" prefWidth="150.0" />
+                                <TableColumn fx:id="customerColumn" text="CUSTOMER" prefWidth="190.0" />
+                                <TableColumn fx:id="occasionColumn" text="OCCASION" prefWidth="150.0" />
+                                <TableColumn fx:id="statusColumn" text="STATUS" prefWidth="135.0" />
+                                <TableColumn fx:id="amountColumn" text="AMOUNT" prefWidth="130.0" />
+                            </columns>
+                        </TableView>
+                    </children>
+                </VBox>
+
+                <VBox spacing="14.0" styleClass="recent-orders-card">
+                    <children>
+                        <VBox spacing="4.0">
+                            <children>
+                                <Label text="Recent Notifications" styleClass="section-title" />
+                                <Label text="Created after successful order status changes." styleClass="section-subtitle" />
+                            </children>
+                        </VBox>
+                        <TableView fx:id="notificationsTable" prefHeight="180.0" styleClass="recent-orders-table">
+                            <columns>
+                                <TableColumn fx:id="notificationColumn" text="MESSAGE" prefWidth="520.0" />
+                                <TableColumn fx:id="notificationStatusColumn" text="STATUS" prefWidth="140.0" />
+                            </columns>
+                        </TableView>
+                    </children>
+                </VBox>
             </children>
         </VBox>
     </content>

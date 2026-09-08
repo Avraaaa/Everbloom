@@ -45,16 +45,16 @@ EverBloom addresses these problems by separating bouquet construction, optional 
 - **Bouquet templates** — start from reusable birthday, anniversary, wedding, sympathy, or other saved designs and customize a separate copy.
 - **Bouquet extras** — add chocolates, greeting cards, ribbons, balloons, premium wrapping, and similar enhancements.
 - **Undo / redo** — reverse or restore bouquet-editing actions while designing an order.
-- **Pricing policies** — apply standard, loyalty, seasonal, or bulk/event pricing rules.
-- **Customer management** — store customer information and view previous orders.
-- **Order management** — create, edit, cancel, search, and view flower-shop orders.
+- **Pricing policies** — apply the standard policy or the loyalty discount policy at checkout.
+- **Customer management** — create, edit, delete, and search customer records.
+- **Order management** — place orders, then search and filter them by order number, customer, status, and fulfilment type.
 - **Order workflow** — process orders through **Ordered → Preparing → Arranging → Ready → Delivered**.
 - **Notifications** — create in-app notifications when important order-status changes occur.
-- **Pickup and delivery** — record requested date/time, pickup information, or delivery address.
+- **Pickup and delivery** — record whether an order is collected in store or delivered to an address.
 - **Wedding and event packages** — build larger orders containing multiple flower arrangements.
 - **Catalogue management** — manage flowers, extras, availability, prices, and bouquet templates.
-- **Search and filtering** — search orders by customer, order number, occasion, date, or status.
-- **Reports and analytics** — view sales summaries, popular flowers, popular extras, and popular occasions.
+- **Search and filtering** — search orders by customer or order number, and filter by status and fulfilment type.
+- **Reports and analytics** — sales by date, most popular flowers, and most popular extras across a chosen date range.
 
 ---
 
@@ -68,7 +68,7 @@ EverBloom addresses these problems by separating bouquet construction, optional 
 
 ## Planned Design Patterns
 
-EverBloom is planned around **six primary design patterns** that directly support the core bouquet-order workflow. Two additional patterns are **optional** and will only be included if their related features remain in the final scope.
+EverBloom uses **six primary design patterns** that directly support the core bouquet-order workflow, plus **two optional patterns** that were kept because the undo/redo editor and the nested event package are both genuinely part of the final scope. Each pattern is justified in [`docs/PATTERN-JUSTIFICATION.md`](docs/PATTERN-JUSTIFICATION.md).
 
 | Pattern | Status | Where it is used | Why |
 |---|---|---|---|
@@ -78,25 +78,27 @@ EverBloom is planned around **six primary design patterns** that directly suppor
 | **Observer** | Primary | Order-status reactions | Notifications, dashboard information, and other independent components can react when an order status changes without being tightly coupled to the order logic. |
 | **Prototype** | Primary | Reusable bouquet templates | Saved bouquet designs can be copied into independent bouquets and then customized without changing the original template. |
 | **Decorator** | Primary | Bouquet extras such as chocolates, ribbons, cards, balloons, and premium wrapping | Optional additions can be layered onto a bouquet dynamically without creating a separate subclass for every possible combination. |
-| **Command** | Optional | Bouquet editing and undo/redo | Included only if undo/redo is kept in the final scope; each reversible editing action can then be represented as a command. |
-| **Composite** | Optional | Wedding/event packages | Included only if event packages support multiple or nested arrangements that need to be handled uniformly. |
+| **Command** | Implemented | Bouquet editing and undo/redo | Adding and removing flowers and extras are real reversible editor actions, so each one is represented as a command with `execute()` and `undo()`. |
+| **Composite** | Implemented | Wedding/event packages | An event package is a tree of groups and arrangements, and the package total is a recursive sum over that tree. |
 
 ---
 
 ## Database Schema
 
-| Table | Purpose / Main Fields |
+| Table | Purpose / Main columns |
 |---|---|
-| `Customers` | `id`, `name`, `phone`, `email`, `loyalty_status` |
-| `Flowers` | `id`, `name`, `category`, `color`, `unit_price`, `stock_quantity`, `is_available` |
-| `Extras` | `id`, `name`, `type`, `unit_price`, `is_available` |
-| `BouquetTemplates` | `id`, `name`, `occasion`, `description` |
-| `BouquetTemplateFlowers` | `template_id`, `flower_id`, `quantity` — flowers included in a reusable template |
-| `Orders` | `id`, `customer_id`, `order_date`, `required_date`, `occasion`, `status`, `pricing_policy`, `fulfilment_type`, `delivery_address`, `subtotal`, `discount_amount`, `total_amount`, `greeting_message` |
-| `Arrangements` | `id`, `order_id`, `parent_arrangement_id`, `template_id`, `name`, `arrangement_type`, `wrapping_type` — supports normal bouquets and nested event-package arrangements |
-| `ArrangementFlowers` | `arrangement_id`, `flower_id`, `quantity`, `unit_price` |
-| `ArrangementExtras` | `arrangement_id`, `extra_id`, `quantity`, `unit_price` |
-| `Notifications` | `id`, `order_id`, `message`, `is_read`, `created_at` |
+| `customers` | `customer_id`, `full_name`, `phone` (unique), `email`, `address`, `created_at`, `updated_at` |
+| `flowers` | `flower_id`, `name` (unique), `color`, `current_unit_price`, `stock_quantity`, `is_active` |
+| `extras` | `extra_id`, `name` (unique), `description`, `current_unit_price`, `is_active` |
+| `bouquet_templates` | `template_id`, `name` (unique), `occasion`, `description`, `wrapping_style`, `message_text`, `is_active` |
+| `bouquet_template_flowers` | `template_id`, `flower_id`, `quantity` — flowers included in a reusable template |
+| `orders` | `order_id`, `order_number` (unique), `customer_id`, `occasion_snapshot`, `fulfillment_type`, `delivery_address_snapshot`, `status`, `pricing_policy_snapshot`, `subtotal_snapshot`, `discount_snapshot`, `total_snapshot`, `placed_at`, `status_updated_at` |
+| `arrangements` | `arrangement_id`, `order_id`, `parent_arrangement_id`, `name_snapshot`, `occasion_snapshot`, `wrapping_style_snapshot`, `message_text_snapshot`, price snapshots — one row per bouquet, or a tree of rows for a nested event package |
+| `arrangement_flowers` | `arrangement_flower_id`, `arrangement_id`, `flower_id`, `flower_name_snapshot`, `unit_price_snapshot`, `quantity`, `line_total_snapshot` |
+| `arrangement_extras` | `arrangement_extra_id`, `arrangement_id`, `extra_id`, `extra_name_snapshot`, `unit_price_snapshot`, `quantity`, `line_total_snapshot` |
+| `notifications` | `notification_id`, `order_id`, `status_snapshot`, `message`, `is_read`, `created_at` |
+
+Money is stored as integer minor units. Columns ending in `_snapshot` keep the values that were true when the order was placed, so historical orders do not change when catalogue prices change.
 
 Primary keys, foreign keys, and appropriate constraints are used to maintain relationships between the tables. Seeder code creates the database tables and inserts initial flower, extra, template, and sample data when required.
 
@@ -117,10 +119,26 @@ Displays existing orders with search and filtering. The order-details view shows
 Manages flowers, extras, availability, prices, and reusable bouquet templates.
 
 ### Customers
-Stores customer information and displays previous order history.
+Stores customer information with search, and shows the details of the selected customer.
 
 ### Reports
-Provides basic sales summaries and popularity reports for flowers, extras, and occasions.
+Provides sales-by-date summaries and popularity reports for flowers and extras over a chosen date range.
+
+---
+
+## Documentation
+
+| Document | Contents |
+|---|---|
+| [`docs/PATTERN-JUSTIFICATION.md`](docs/PATTERN-JUSTIFICATION.md) | Why each design pattern was used, the simpler alternative, where it lives in the code, and the benefit |
+| [`docs/MANUAL-TEST-CHECKLIST.md`](docs/MANUAL-TEST-CHECKLIST.md) | Manual checks for both core workflows, persistence after restart, search/report operations, and validation |
+| [`docs/VIVA-CHECKLIST.md`](docs/VIVA-CHECKLIST.md) | Demonstration order and the questions each team member should be able to answer |
+| [`docs/SCREENSHOTS.md`](docs/SCREENSHOTS.md) | Screenshots of the main screens and workflows |
+| [`docs/diagrams/uml-class-diagrams.pdf`](docs/diagrams/uml-class-diagrams.pdf) | UML class diagrams for the pattern-heavy areas and the layering |
+| [`docs/diagrams/er-diagram.pdf`](docs/diagrams/er-diagram.pdf) | ER diagram for the actual SQLite schema |
+| [`docs/domain-database-design.md`](docs/domain-database-design.md) | Schema baseline |
+| [`docs/ui-behavior-specification.md`](docs/ui-behavior-specification.md) | Screen behavior baseline |
+| [`docs/DESIGN-DECISIONS.md`](docs/DESIGN-DECISIONS.md) | Longer record of architecture and pattern decisions |
 
 ---
 
@@ -144,7 +162,7 @@ JavaFX Views / Controllers
 
 ### Requirements
 
-- JDK 17 or later
+- JDK 21
 - Maven
 
 ### Run

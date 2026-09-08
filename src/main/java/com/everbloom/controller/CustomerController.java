@@ -11,14 +11,17 @@ import javafx.scene.control.Button;
 import javafx.scene.control.ButtonBar;
 import javafx.scene.control.ButtonType;
 import javafx.scene.control.Dialog;
+import javafx.scene.control.DialogPane;
 import javafx.scene.control.Label;
 import javafx.scene.control.TableColumn;
 import javafx.scene.control.TableView;
 import javafx.scene.control.TextArea;
 import javafx.scene.control.TextField;
+import javafx.geometry.Insets;
 import javafx.scene.layout.GridPane;
 
 import java.sql.SQLException;
+import java.util.Objects;
 import java.util.Optional;
 
 public class CustomerController {
@@ -84,7 +87,7 @@ public class CustomerController {
         saveCustomerWithDialog(null).ifPresent(customer -> {
             loadCustomers();
             selectCustomer(customer.getId());
-            showMessage("Customer added successfully.");
+            showSuccess("Customer added successfully.");
         });
     }
 
@@ -99,7 +102,7 @@ public class CustomerController {
         saveCustomerWithDialog(selectedCustomer).ifPresent(customer -> {
             loadCustomers();
             selectCustomer(customer.getId());
-            showMessage("Customer updated successfully.");
+            showSuccess("Customer updated successfully.");
         });
     }
 
@@ -118,7 +121,7 @@ public class CustomerController {
         try {
             if (customerService.delete(selectedCustomer.getId())) {
                 loadCustomers();
-                showMessage("Customer deleted successfully.");
+                showSuccess("Customer deleted successfully.");
             } else {
                 showMessage("The selected customer no longer exists.");
             }
@@ -162,6 +165,7 @@ public class CustomerController {
         dialog.setTitle(customer == null ? "Add Customer" : "Edit Customer");
         dialog.getDialogPane().setContent(form);
         dialog.getDialogPane().getButtonTypes().addAll(saveButtonType, ButtonType.CANCEL);
+        applyDialogStyle(dialog.getDialogPane());
 
         Button saveButton = (Button) dialog.getDialogPane().lookupButton(saveButtonType);
         FormValue<Customer> formValue = new FormValue<>();
@@ -196,7 +200,14 @@ public class CustomerController {
         form.setHgap(12);
         form.setVgap(10);
         form.setPrefWidth(380);
+        form.setPadding(new Insets(18, 18, 6, 18));
         return form;
+    }
+
+    private void applyDialogStyle(DialogPane dialogPane) {
+        dialogPane.getStylesheets().add(
+                Objects.requireNonNull(getClass().getResource("/com/everbloom/css/app.css")).toExternalForm());
+        dialogPane.getStyleClass().add("app-dialog");
     }
 
     private boolean confirmDeletion(String customerName) {
@@ -204,6 +215,7 @@ public class CustomerController {
         alert.setTitle("Delete Customer");
         alert.setHeaderText("Delete " + customerName + "?");
         alert.setContentText("This action cannot be undone.");
+        applyDialogStyle(alert.getDialogPane());
         Optional<ButtonType> result = alert.showAndWait();
         return result.isPresent() && result.get() == ButtonType.OK;
     }
@@ -233,9 +245,15 @@ public class CustomerController {
     }
 
     private void showMessage(String message) {
+        messageLabel.getStyleClass().remove("message-success");
         messageLabel.setText(message);
         messageLabel.setVisible(!message.isBlank());
         messageLabel.setManaged(!message.isBlank());
+    }
+
+    private void showSuccess(String message) {
+        showMessage(message);
+        messageLabel.getStyleClass().add("message-success");
     }
 
     private String valueOrDash(String value) {

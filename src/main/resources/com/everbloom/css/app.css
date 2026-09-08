@@ -156,7 +156,7 @@
 
 .card-value {
     -fx-font-family: "Georgia";
-    -fx-font-size: 30px;
+    -fx-font-size: 26px;
     -fx-font-weight: bold;
     -fx-text-fill: #294638;
 }
@@ -239,6 +239,11 @@
     -fx-padding: 5px 10px;
     -fx-font-size: 10px;
     -fx-font-weight: bold;
+}
+
+.status-ordered {
+    -fx-background-color: #e6ecf3;
+    -fx-text-fill: #4a6079;
 }
 
 .status-preparing {
@@ -470,6 +475,7 @@
     -fx-font-size: 12px;
 }
 
+
 .reports-page {
     -fx-padding: 40px 42px 44px 42px;
 }
@@ -539,4 +545,62 @@
     -fx-font-size: 17px;
     -fx-font-weight: bold;
     -fx-text-fill: #28513f;
+}
+
+.bouquet-total-policy {
+    -fx-font-family: "Segoe UI", "Helvetica Neue", sans-serif;
+    -fx-font-size: 13px;
+}
+
+.app-dialog {
+    -fx-background-color: #fffdf9;
+}
+
+.app-dialog .header-panel {
+    -fx-background-color: #f4f0ea;
+}
+
+.app-dialog .header-panel .label {
+    -fx-font-size: 12px;
+    -fx-text-fill: #9a4f48;
+    -fx-wrap-text: true;
+}
+
+.app-dialog .content .label {
+    -fx-font-size: 13px;
+    -fx-text-fill: #4f5852;
+}
+
+.app-dialog .label {
+    -fx-font-size: 12px;
+    -fx-text-fill: #4f5852;
+}
+
+.app-dialog .text-field,
+.app-dialog .text-area,
+.app-dialog .combo-box,
+.app-dialog .list-view {
+    -fx-background-radius: 8px;
+    -fx-border-color: #ded7ce;
+    -fx-border-radius: 8px;
+}
+
+.app-dialog .button-bar .button {
+    -fx-background-radius: 8px;
+    -fx-padding: 8px 16px;
+    -fx-cursor: hand;
+    -fx-font-size: 12px;
+    -fx-font-weight: bold;
+    -fx-background-color: #eee8df;
+    -fx-text-fill: #405248;
+}
+
+.app-dialog .button-bar .button:default {
+    -fx-background-color: #28513f;
+    -fx-text-fill: white;
+}
+
+.message-success {
+    -fx-background-color: #e3efe6;
+    -fx-text-fill: #3d7652;
 }

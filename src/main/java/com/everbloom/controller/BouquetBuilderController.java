@@ -200,6 +200,15 @@ public class BouquetBuilderController {
     }
 
     @FXML
+    private void updateFulfillment() {
+        boolean deliveryRequested = "DELIVERY".equals(fulfillmentComboBox.getValue());
+        deliveryAddressTextArea.setDisable(!deliveryRequested);
+        if (!deliveryRequested) {
+            deliveryAddressTextArea.clear();
+        }
+    }
+
+    @FXML
     private void updateOrderMode() {
         boolean eventMode = isEventPackageMode();
         eventPackagePane.setManaged(eventMode);
@@ -220,7 +229,7 @@ public class BouquetBuilderController {
             refreshEventGroups();
             eventGroupComboBox.setValue(eventPackage);
             updateEventPackagePreview();
-            showMessage("Event package created. Add groups or arrangements.");
+            showSuccess("Event package created. Add groups or arrangements.");
         } catch (IllegalArgumentException exception) {
             showMessage(exception.getMessage());
         }
@@ -237,7 +246,7 @@ public class BouquetBuilderController {
             refreshEventGroups();
             eventGroupComboBox.setValue(group);
             updateEventPackagePreview();
-            showMessage("Group added to " + parent.getName() + ".");
+            showSuccess("Group added to " + parent.getName() + ".");
         } catch (IllegalArgumentException exception) {
             showMessage(exception.getMessage());
         }
@@ -257,7 +266,7 @@ public class BouquetBuilderController {
             arrangementNameField.clear();
             updateEventPackagePreview();
             resetCurrentBouquet();
-            showMessage("Arrangement added to " + group.getName() + ".");
+            showSuccess("Arrangement added to " + group.getName() + ".");
         } catch (IllegalArgumentException exception) {
             showMessage(exception.getMessage());
         }
@@ -278,7 +287,7 @@ public class BouquetBuilderController {
             refreshSelectedExtras();
             updateSummaryIfComplete();
             updateUndoRedoButtons();
-            showMessage("Template copied. You can now customize this bouquet.");
+            showSuccess("Template copied. You can now customize this bouquet.");
         } catch (IllegalArgumentException exception) {
             showMessage(exception.getMessage());
         }
@@ -361,7 +370,7 @@ public class BouquetBuilderController {
         try {
             Bouquet bouquet = bouquetBuilder.build();
             showBouquetSummary(bouquet, decorateBouquet(bouquet));
-            showMessage("Bouquet built and ready for the next order step.");
+            showSuccess("Bouquet built and ready for the next order step.");
         } catch (IllegalArgumentException exception) {
             showEmptySummary();
             showMessage(exception.getMessage());
@@ -391,7 +400,7 @@ public class BouquetBuilderController {
                     subtotal, discount, total);
             Order savedOrder = orderService.placeOrder(order);
             resetBuilder();
-            showMessage("Order " + savedOrder.getOrderNumber() + " placed successfully.");
+            showSuccess("Order " + savedOrder.getOrderNumber() + " placed successfully.");
         } catch (IllegalArgumentException exception) {
             showMessage(exception.getMessage());
         } catch (SQLException exception) {
@@ -418,7 +427,7 @@ public class BouquetBuilderController {
             refreshEventGroups();
             eventGroupComboBox.setValue(eventPackage);
             updateEventPackagePreview();
-            showMessage("Event package order " + savedOrder.getOrderNumber() + " saved and reloaded successfully.");
+            showSuccess("Event package order " + savedOrder.getOrderNumber() + " saved and reloaded successfully.");
         } catch (IllegalArgumentException exception) {
             showMessage(exception.getMessage());
         } catch (SQLException exception) {
@@ -440,6 +449,7 @@ public class BouquetBuilderController {
         pricingPolicyComboBox.setValue("Standard Pricing");
         fulfillmentComboBox.setItems(FXCollections.observableArrayList("PICKUP", "DELIVERY"));
         fulfillmentComboBox.setValue("PICKUP");
+        updateFulfillment();
         flowerQuantitySpinner.setValueFactory(new SpinnerValueFactory.IntegerSpinnerValueFactory(1, 1, 1));
 
         customerComboBox.setConverter(customerConverter());
@@ -634,7 +644,7 @@ public class BouquetBuilderController {
         customerComboBox.setValue(null);
         resetCurrentBouquet();
         fulfillmentComboBox.setValue("PICKUP");
-        deliveryAddressTextArea.clear();
+        updateFulfillment();
         pricingPolicyComboBox.setValue("Standard Pricing");
         showEmptySummary();
     }
@@ -662,7 +672,7 @@ public class BouquetBuilderController {
         return new StringConverter<>() {
             @Override
             public String toString(Customer customer) {
-                return customer == null ? "" : customer.getFullName() + " - " + customer.getPhone();
+                return customer == null ? null : customer.getFullName() + " - " + customer.getPhone();
             }
 
             @Override
@@ -676,7 +686,7 @@ public class BouquetBuilderController {
         return new StringConverter<>() {
             @Override
             public String toString(Flower flower) {
-                return flower == null ? "" : flower.getName() + " (" + flower.getStockQuantity() + " available)";
+                return flower == null ? null : flower.getName() + " (" + flower.getStockQuantity() + " available)";
             }
 
             @Override
@@ -690,7 +700,7 @@ public class BouquetBuilderController {
         return new StringConverter<>() {
             @Override
             public String toString(Extra extra) {
-                return extra == null ? "" : extra.getName() + " (" + formatPrice(extra.getUnitPrice()) + ")";
+                return extra == null ? null : extra.getName() + " (" + formatPrice(extra.getUnitPrice()) + ")";
             }
 
             @Override
@@ -702,7 +712,7 @@ public class BouquetBuilderController {
 
     private StringConverter<BouquetTemplate> templateConverter() {
         return new StringConverter<>() {
-            @Override public String toString(BouquetTemplate template) { return template == null ? "" : template.getName() + " - " + template.getOccasion(); }
+            @Override public String toString(BouquetTemplate template) { return template == null ? null : template.getName() + " - " + template.getOccasion(); }
             @Override public BouquetTemplate fromString(String value) { return null; }
         };
     }
@@ -726,8 +736,14 @@ public class BouquetBuilderController {
     }
 
     private void showMessage(String message) {
+        messageLabel.getStyleClass().remove("message-success");
         messageLabel.setText(message);
         messageLabel.setVisible(!message.isBlank());
         messageLabel.setManaged(!message.isBlank());
+    }
+
+    private void showSuccess(String message) {
+        showMessage(message);
+        messageLabel.getStyleClass().add("message-success");
     }
 }

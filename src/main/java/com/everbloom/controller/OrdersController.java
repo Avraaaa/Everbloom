@@ -44,23 +44,39 @@ public class OrdersController {
         customerColumn.setCellValueFactory(cell -> new ReadOnlyStringWrapper(cell.getValue().getCustomer().getFullName()));
         statusColumn.setCellValueFactory(cell -> new ReadOnlyStringWrapper(cell.getValue().getStatus()));
         totalColumn.setCellValueFactory(cell -> new ReadOnlyStringWrapper(MoneyFormatter.format(cell.getValue().getTotal())));
+        orderTable.setPlaceholder(new Label("No orders match this search."));
+        orderTable.setColumnResizePolicy(TableView.CONSTRAINED_RESIZE_POLICY_FLEX_LAST_COLUMN);
         orderTable.getSelectionModel().selectedItemProperty().addListener((value, oldOrder, order) -> showDetails(order));
         refreshOrders();
     }
 
     @FXML private void refreshOrders() {
+        Order selectedOrder = orderTable.getSelectionModel().getSelectedItem();
+        showMessage("");
         try {
             orderTable.setItems(FXCollections.observableArrayList(orderService.findOrders(
                     searchField.getText(), statusComboBox.getValue(), fulfillmentComboBox.getValue())));
-            showMessage("");
+            reselectOrder(selectedOrder);
         } catch (SQLException exception) { showMessage("Unable to load orders."); }
     }
 
     @FXML private void advanceOrder() {
+        Order selectedOrder = orderTable.getSelectionModel().getSelectedItem();
         try {
-            orderService.advanceOrder(orderTable.getSelectionModel().getSelectedItem());
+            orderService.advanceOrder(selectedOrder);
+            showSuccess("Order " + selectedOrder.getOrderNumber() + " is now " + selectedOrder.getStatus() + ".");
         } catch (IllegalArgumentException | IllegalStateException exception) { showMessage(exception.getMessage()); }
         catch (SQLException exception) { showMessage("Unable to update the order."); }
+    }
+
+    private void reselectOrder(Order previousOrder) {
+        if (previousOrder == null) { return; }
+        for (Order order : orderTable.getItems()) {
+            if (order.getId() == previousOrder.getId()) {
+                orderTable.getSelectionModel().select(order);
+                return;
+            }
+        }
     }
 
     private void showDetails(Order order) {
@@ -105,5 +121,15 @@ public class OrdersController {
         detailsArea.setText(details.toString());
     }
     private String valueOrNone(String value) { return value == null || value.isBlank() ? "None" : value; }
-    private void showMessage(String message) { messageLabel.setText(message); messageLabel.setVisible(!message.isBlank()); messageLabel.setManaged(!message.isBlank()); }
+    private void showMessage(String message) {
+        messageLabel.getStyleClass().remove("message-success");
+        messageLabel.setText(message);
+        messageLabel.setVisible(!message.isBlank());
+        messageLabel.setManaged(!message.isBlank());
+    }
+
+    private void showSuccess(String message) {
+        showMessage(message);
+        messageLabel.getStyleClass().add("message-success");
+    }
 }

@@ -12,7 +12,7 @@
 <?import javafx.scene.layout.VBox?>
 <?import javafx.scene.control.ScrollPane?>
 
-<ScrollPane fitToWidth="true" hbarPolicy="NEVER" styleClass="page-scroll"
+<ScrollPane fitToWidth="true" hbarPolicy="AS_NEEDED" styleClass="page-scroll"
             xmlns="http://javafx.com/javafx/21" xmlns:fx="http://javafx.com/fxml/1"
             fx:controller="com.everbloom.controller.CatalogueController">
     <content>
@@ -91,6 +91,7 @@
                                                 <HBox HBox.hgrow="ALWAYS" />
                                                 <Button text="Add Template" onAction="#addTemplate" styleClass="primary-action" />
                                                 <Button text="Edit" onAction="#editTemplate" styleClass="secondary-action" />
+                                                <Button text="Delete" onAction="#deleteTemplate" styleClass="danger-action" />
                                             </children>
                                         </HBox>
                                         <TableView fx:id="templateTable" prefHeight="390.0" styleClass="catalogue-table">

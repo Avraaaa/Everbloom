@@ -12,7 +12,7 @@
 <?import javafx.scene.layout.HBox?>
 <?import javafx.scene.layout.VBox?>
 
-<ScrollPane fitToWidth="true" hbarPolicy="NEVER" styleClass="page-scroll"
+<ScrollPane fitToWidth="true" hbarPolicy="AS_NEEDED" styleClass="page-scroll"
             xmlns="http://javafx.com/javafx/21" xmlns:fx="http://javafx.com/fxml/1"
             fx:controller="com.everbloom.controller.BouquetBuilderController">
     <content>
@@ -174,7 +174,7 @@
                                             <children>
                                                 <Label text="Selected policy" styleClass="bouquet-total-label" />
                                                 <HBox HBox.hgrow="ALWAYS" />
-                                                <Label fx:id="selectedPricingPolicyLabel" text="Standard Pricing" styleClass="bouquet-total-value" />
+                                                <Label fx:id="selectedPricingPolicyLabel" text="Standard Pricing" styleClass="bouquet-total-value,bouquet-total-policy" />
                                             </children>
                                         </HBox>
                                         <HBox alignment="CENTER_LEFT" styleClass="bouquet-total-row">
@@ -197,7 +197,7 @@
                                 <VBox spacing="11.0">
                                     <children>
                                         <Label text="Fulfillment" styleClass="section-title" />
-                                        <ComboBox fx:id="fulfillmentComboBox" promptText="Pickup or delivery" maxWidth="Infinity" />
+                                        <ComboBox fx:id="fulfillmentComboBox" onAction="#updateFulfillment" promptText="Pickup or delivery" maxWidth="Infinity" />
                                         <TextArea fx:id="deliveryAddressTextArea" prefRowCount="2"
                                                   promptText="Delivery address (required for delivery)" wrapText="true" />
                                     </children>

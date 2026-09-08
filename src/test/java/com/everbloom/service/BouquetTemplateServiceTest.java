@@ -36,6 +36,23 @@ class BouquetTemplateServiceTest {
     }
 
     @Test
+    void keepsTemplateAndOtherClonesUnchangedWhenOneCloneIsEdited() throws Exception {
+        DatabaseConnection connection = new DatabaseConnection(temporaryDirectory.resolve("clone-independence.db"));
+        new DatabaseInitializer(connection).initialize();
+        BouquetTemplateService service = new BouquetTemplateService(new BouquetTemplateRepository(connection));
+        BouquetTemplate template = service.findAll().getFirst();
+        BouquetFlower templateLine = template.getFlowers().getFirst();
+
+        BouquetBuilder first = service.copyToBuilder(template);
+        BouquetBuilder second = service.copyToBuilder(template);
+        first.addFlower(first.getSelectedFlowers().getFirst().getFlower(), 2);
+
+        assertEquals(templateLine.getQuantity() + 2, first.getSelectedFlowers().getFirst().getQuantity());
+        assertEquals(templateLine.getQuantity(), second.getSelectedFlowers().getFirst().getQuantity());
+        assertEquals(templateLine.getQuantity(), template.getFlowers().getFirst().getQuantity());
+    }
+
+    @Test
     void createsAndUpdatesTemplateWithFlowerComposition() throws Exception {
         DatabaseConnection connection = new DatabaseConnection(temporaryDirectory.resolve("template-save.db"));
         new DatabaseInitializer(connection).initialize();
