@@ -2,8 +2,10 @@ package com.everbloom.repository;
 
 import com.everbloom.database.DatabaseConnection;
 import com.everbloom.model.BouquetFlower;
+import com.everbloom.model.Bouquet;
 import com.everbloom.model.Order;
 import com.everbloom.model.Extra;
+import com.everbloom.model.Flower;
 
 import java.sql.Connection;
 import java.sql.PreparedStatement;
@@ -19,6 +21,7 @@ import com.everbloom.composite.EventPackageComponent;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Optional;
+import java.time.LocalDateTime;
 
 public class OrderRepository {
 
@@ -108,13 +111,81 @@ public class OrderRepository {
     public List<Order> findAll() throws SQLException {
         String sql = "SELECT o.*, c.full_name, c.phone FROM orders o JOIN customers c ON o.customer_id = c.customer_id ORDER BY o.placed_at DESC";
         List<Order> orders = new ArrayList<>();
-        try (Connection connection = databaseConnection.getConnection(); PreparedStatement statement = connection.prepareStatement(sql); ResultSet resultSet = statement.executeQuery()) {
+        try (Connection connection = databaseConnection.getConnection();
+             PreparedStatement statement = connection.prepareStatement(sql);
+             ResultSet resultSet = statement.executeQuery()) {
             while (resultSet.next()) {
-                Customer customer = new Customer(resultSet.getLong("customer_id"), resultSet.getString("full_name"), resultSet.getString("phone"), null, null);
-                orders.add(new Order(resultSet.getLong("order_id"), resultSet.getString("order_number"), customer, null, List.of(), resultSet.getString("fulfillment_type"), resultSet.getString("delivery_address_snapshot"), resultSet.getString("pricing_policy_snapshot"), resultSet.getLong("subtotal_snapshot"), resultSet.getLong("discount_snapshot"), resultSet.getLong("total_snapshot"), resultSet.getString("status"), null));
+                long orderId = resultSet.getLong("order_id");
+                Customer customer = new Customer(resultSet.getLong("customer_id"),
+                        resultSet.getString("full_name"), resultSet.getString("phone"), null, null);
+                Bouquet bouquet = findHistoricalBouquet(connection, orderId, customer);
+                List<Extra> extras = bouquet == null ? List.of() : findHistoricalExtras(connection, orderId);
+                orders.add(new Order(orderId, resultSet.getString("order_number"), customer, bouquet, extras,
+                        resultSet.getString("fulfillment_type"), resultSet.getString("delivery_address_snapshot"),
+                        resultSet.getString("pricing_policy_snapshot"), resultSet.getLong("subtotal_snapshot"),
+                        resultSet.getLong("discount_snapshot"), resultSet.getLong("total_snapshot"),
+                        resultSet.getString("status"), parseDateTime(resultSet.getString("placed_at"))));
             }
         }
         return orders;
+    }
+
+    private Bouquet findHistoricalBouquet(Connection connection, long orderId, Customer customer) throws SQLException {
+        String sql = "SELECT arrangement_id, occasion_snapshot, wrapping_style_snapshot, message_text_snapshot "
+                + "FROM arrangements WHERE order_id = ? AND parent_arrangement_id IS NULL "
+                + "AND occasion_snapshot NOT IN ('EVENT_GROUP', 'EVENT_ARRANGEMENT') ORDER BY arrangement_id LIMIT 1";
+        try (PreparedStatement statement = connection.prepareStatement(sql)) {
+            statement.setLong(1, orderId);
+            try (ResultSet resultSet = statement.executeQuery()) {
+                if (!resultSet.next()) return null;
+                long arrangementId = resultSet.getLong("arrangement_id");
+                return new Bouquet(customer, resultSet.getString("occasion_snapshot"),
+                        findHistoricalFlowers(connection, arrangementId),
+                        resultSet.getString("wrapping_style_snapshot"),
+                        resultSet.getString("message_text_snapshot"));
+            }
+        }
+    }
+
+    private List<BouquetFlower> findHistoricalFlowers(Connection connection, long arrangementId) throws SQLException {
+        String sql = "SELECT flower_id, flower_name_snapshot, unit_price_snapshot, quantity "
+                + "FROM arrangement_flowers WHERE arrangement_id = ? ORDER BY arrangement_flower_id";
+        List<BouquetFlower> flowers = new ArrayList<>();
+        try (PreparedStatement statement = connection.prepareStatement(sql)) {
+            statement.setLong(1, arrangementId);
+            try (ResultSet resultSet = statement.executeQuery()) {
+                while (resultSet.next()) {
+                    int quantity = resultSet.getInt("quantity");
+                    Flower flower = new Flower(resultSet.getLong("flower_id"),
+                            resultSet.getString("flower_name_snapshot"), null,
+                            resultSet.getLong("unit_price_snapshot"), quantity, true);
+                    flowers.add(new BouquetFlower(flower, quantity));
+                }
+            }
+        }
+        return flowers;
+    }
+
+    private List<Extra> findHistoricalExtras(Connection connection, long orderId) throws SQLException {
+        String sql = "SELECT ae.extra_id, ae.extra_name_snapshot, ae.unit_price_snapshot "
+                + "FROM arrangement_extras ae JOIN arrangements a ON ae.arrangement_id = a.arrangement_id "
+                + "WHERE a.order_id = ? ORDER BY ae.arrangement_extra_id";
+        List<Extra> extras = new ArrayList<>();
+        try (PreparedStatement statement = connection.prepareStatement(sql)) {
+            statement.setLong(1, orderId);
+            try (ResultSet resultSet = statement.executeQuery()) {
+                while (resultSet.next()) {
+                    extras.add(new Extra(resultSet.getLong("extra_id"),
+                            resultSet.getString("extra_name_snapshot"), null,
+                            resultSet.getLong("unit_price_snapshot"), true));
+                }
+            }
+        }
+        return extras;
+    }
+
+    private LocalDateTime parseDateTime(String value) {
+        return value == null ? null : LocalDateTime.parse(value.replace(' ', 'T'));
     }
 
     public void updateStatus(Order order) throws SQLException {

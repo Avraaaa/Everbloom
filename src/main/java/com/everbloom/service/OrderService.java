@@ -54,12 +54,18 @@ public class OrderService {
     }
 
     public List<Order> findOrders(String searchText, String status) throws SQLException {
+        return findOrders(searchText, status, null);
+    }
+
+    public List<Order> findOrders(String searchText, String status, String fulfillmentType) throws SQLException {
         List<Order> matches = new ArrayList<>();
         String query = searchText == null ? "" : searchText.trim().toLowerCase();
         for (Order order : orderRepository.findAll()) {
             boolean matchesSearch = query.isEmpty() || order.getOrderNumber().toLowerCase().contains(query) || order.getCustomer().getFullName().toLowerCase().contains(query);
             boolean matchesStatus = status == null || "All statuses".equals(status) || status.equals(order.getStatus());
-            if (matchesSearch && matchesStatus) matches.add(order);
+            boolean matchesFulfillment = fulfillmentType == null || "All fulfillment".equals(fulfillmentType)
+                    || fulfillmentType.equals(order.getFulfillmentType());
+            if (matchesSearch && matchesStatus && matchesFulfillment) matches.add(order);
         }
         return matches;
     }

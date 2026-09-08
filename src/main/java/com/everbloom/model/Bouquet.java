@@ -1,5 +1,7 @@
 package com.everbloom.model;
 
+import com.everbloom.util.MoneyFormatter;
+
 import java.util.List;
 
 public class Bouquet {
@@ -10,7 +12,7 @@ public class Bouquet {
     private final String wrappingStyle;
     private final String message;
 
-    Bouquet(Customer customer, String occasion, List<BouquetFlower> flowers, String wrappingStyle, String message) {
+    public Bouquet(Customer customer, String occasion, List<BouquetFlower> flowers, String wrappingStyle, String message) {
         this.customer = customer;
         this.occasion = occasion;
         this.flowers = List.copyOf(flowers);
@@ -62,7 +64,7 @@ public class Bouquet {
         if (message != null) {
             summary.append("Message: ").append(message).append("\n");
         }
-        summary.append("\nFlower subtotal: BDT ").append(getFlowerSubtotal());
+        summary.append("\nFlower subtotal: ").append(MoneyFormatter.format(getFlowerSubtotal()));
         return summary.toString();
     }
 }

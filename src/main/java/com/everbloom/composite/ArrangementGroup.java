@@ -1,5 +1,7 @@
 package com.everbloom.composite;
 
+import com.everbloom.util.MoneyFormatter;
+
 import java.util.ArrayList;
 import java.util.List;
 
@@ -28,7 +30,8 @@ public class ArrangementGroup implements EventPackageComponent {
     public String getSummary() { StringBuilder summary = new StringBuilder(name).append("\n"); appendChildren(summary, "", children); return summary.toString().trim(); }
     private void appendChildren(StringBuilder summary, String indent, List<EventPackageComponent> components) {
         for (EventPackageComponent component : components) {
-            summary.append(indent).append("- ").append(component.getName()).append(": BDT ").append(component.getTotalPrice()).append("\n");
+            summary.append(indent).append("- ").append(component.getName()).append(": ")
+                    .append(MoneyFormatter.format(component.getTotalPrice())).append("\n");
             if (component instanceof ArrangementGroup group) appendChildren(summary, indent + "  ", group.children);
         }
     }

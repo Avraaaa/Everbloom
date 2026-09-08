@@ -7,6 +7,7 @@ import com.everbloom.repository.DashboardRepository;
 import com.everbloom.repository.NotificationRepository;
 import com.everbloom.service.DashboardService;
 import com.everbloom.service.NotificationService;
+import com.everbloom.util.MoneyFormatter;
 import javafx.beans.property.ReadOnlyStringWrapper;
 import javafx.collections.FXCollections;
 import javafx.fxml.FXML;
@@ -76,7 +77,7 @@ public class DashboardController {
         notificationsTable.setColumnResizePolicy(TableView.CONSTRAINED_RESIZE_POLICY_FLEX_LAST_COLUMN);
     }
 
-    private String formatPrice(long value) { return "BDT " + value; }
+    private String formatPrice(long value) { return MoneyFormatter.format(value); }
     private void showMessage(String message) { messageLabel.setText(message); messageLabel.setVisible(!message.isBlank()); messageLabel.setManaged(!message.isBlank()); }
 
     private static final class StatusCell<T> extends TableCell<T, String> {

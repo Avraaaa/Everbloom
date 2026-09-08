@@ -1,12 +1,17 @@
 package com.everbloom.controller;
 
 import com.everbloom.database.DatabaseConnection;
+import com.everbloom.model.BouquetFlower;
+import com.everbloom.model.BouquetTemplate;
 import com.everbloom.model.Extra;
 import com.everbloom.model.Flower;
+import com.everbloom.repository.BouquetTemplateRepository;
 import com.everbloom.repository.ExtraRepository;
 import com.everbloom.repository.FlowerRepository;
+import com.everbloom.service.BouquetTemplateService;
 import com.everbloom.service.ExtraService;
 import com.everbloom.service.FlowerService;
+import com.everbloom.util.MoneyFormatter;
 import javafx.collections.FXCollections;
 import javafx.fxml.FXML;
 import javafx.scene.control.Alert;
@@ -14,11 +19,20 @@ import javafx.scene.control.Button;
 import javafx.scene.control.ButtonBar;
 import javafx.scene.control.ButtonType;
 import javafx.scene.control.CheckBox;
+import javafx.scene.control.ComboBox;
 import javafx.scene.control.Label;
+import javafx.scene.control.ListCell;
+import javafx.scene.control.ListView;
+import javafx.scene.control.Spinner;
+import javafx.scene.control.SpinnerValueFactory;
 import javafx.scene.control.TableColumn;
 import javafx.scene.control.TableView;
 import javafx.scene.control.TextField;
+import javafx.geometry.Insets;
 import javafx.scene.layout.GridPane;
+import javafx.scene.layout.HBox;
+import javafx.scene.layout.VBox;
+import javafx.util.StringConverter;
 
 import java.math.BigDecimal;
 import java.math.RoundingMode;
@@ -67,21 +81,37 @@ public class CatalogueController {
     private TableColumn<Extra, String> extraStatusColumn;
 
     @FXML
+    private TableView<BouquetTemplate> templateTable;
+
+    @FXML
+    private TableColumn<BouquetTemplate, String> templateNameColumn;
+
+    @FXML
+    private TableColumn<BouquetTemplate, String> templateOccasionColumn;
+
+    @FXML
+    private TableColumn<BouquetTemplate, String> templateFlowersColumn;
+
+    @FXML
     private Label messageLabel;
 
     private FlowerService flowerService;
     private ExtraService extraService;
+    private BouquetTemplateService templateService;
 
     @FXML
     private void initialize() {
         DatabaseConnection databaseConnection = new DatabaseConnection();
         flowerService = new FlowerService(new FlowerRepository(databaseConnection));
         extraService = new ExtraService(new ExtraRepository(databaseConnection));
+        templateService = new BouquetTemplateService(new BouquetTemplateRepository(databaseConnection));
 
         configureFlowerTable();
         configureExtraTable();
+        configureTemplateTable();
         loadFlowers();
         loadExtras();
+        loadTemplates();
     }
 
     @FXML
@@ -112,7 +142,7 @@ public class CatalogueController {
             try {
                 flowerService.create(flower);
                 loadFlowers();
-                showMessage("Flower added successfully.");
+                showSuccess("Flower added successfully.");
             } catch (IllegalArgumentException | SQLException exception) {
                 showMessage(readableMessage(exception, "Unable to add the flower."));
             }
@@ -131,7 +161,7 @@ public class CatalogueController {
             try {
                 flowerService.update(flower);
                 loadFlowers();
-                showMessage("Flower updated successfully.");
+                showSuccess("Flower updated successfully.");
             } catch (IllegalArgumentException | SQLException exception) {
                 showMessage(readableMessage(exception, "Unable to update the flower."));
             }
@@ -153,7 +183,7 @@ public class CatalogueController {
         try {
             if (flowerService.delete(selectedFlower.getId())) {
                 loadFlowers();
-                showMessage("Flower deleted successfully.");
+                showSuccess("Flower deleted successfully.");
             } else {
                 showMessage("The selected flower no longer exists.");
             }
@@ -168,7 +198,7 @@ public class CatalogueController {
             try {
                 extraService.create(extra);
                 loadExtras();
-                showMessage("Extra added successfully.");
+                showSuccess("Extra added successfully.");
             } catch (IllegalArgumentException | SQLException exception) {
                 showMessage(readableMessage(exception, "Unable to add the extra."));
             }
@@ -187,7 +217,7 @@ public class CatalogueController {
             try {
                 extraService.update(extra);
                 loadExtras();
-                showMessage("Extra updated successfully.");
+                showSuccess("Extra updated successfully.");
             } catch (IllegalArgumentException | SQLException exception) {
                 showMessage(readableMessage(exception, "Unable to update the extra."));
             }
@@ -209,12 +239,70 @@ public class CatalogueController {
         try {
             if (extraService.delete(selectedExtra.getId())) {
                 loadExtras();
-                showMessage("Extra deleted successfully.");
+                showSuccess("Extra deleted successfully.");
             } else {
                 showMessage("The selected extra no longer exists.");
             }
         } catch (SQLException exception) {
             showMessage("This extra cannot be deleted because it is used by another record.");
+        }
+    }
+
+    @FXML
+    private void addTemplate() {
+        showTemplateDialog(null).ifPresent(template -> {
+            try {
+                templateService.create(template);
+                loadTemplates();
+                showSuccess("Bouquet template added successfully.");
+            } catch (IllegalArgumentException | SQLException exception) {
+                showMessage(readableMessage(exception, "Unable to add the bouquet template."));
+            }
+        });
+    }
+
+    @FXML
+    private void editTemplate() {
+        BouquetTemplate selectedTemplate = templateTable.getSelectionModel().getSelectedItem();
+        if (selectedTemplate == null) {
+            showMessage("Select a bouquet template to edit.");
+            return;
+        }
+        showTemplateDialog(selectedTemplate).ifPresent(template -> {
+            try {
+                if (templateService.update(template)) {
+                    loadTemplates();
+                    showSuccess("Bouquet template updated successfully.");
+                } else {
+                    showMessage("The selected bouquet template no longer exists.");
+                }
+            } catch (IllegalArgumentException | SQLException exception) {
+                showMessage(readableMessage(exception, "Unable to update the bouquet template."));
+            }
+        });
+    }
+
+    @FXML
+    private void deleteTemplate() {
+        BouquetTemplate selectedTemplate = templateTable.getSelectionModel().getSelectedItem();
+        if (selectedTemplate == null) {
+            showMessage("Select a bouquet template to delete.");
+            return;
+        }
+
+        if (!confirmDeletion("bouquet template", selectedTemplate.getName())) {
+            return;
+        }
+
+        try {
+            if (templateService.delete(selectedTemplate.getId())) {
+                loadTemplates();
+                showSuccess("Bouquet template deleted successfully.");
+            } else {
+                showMessage("The selected bouquet template no longer exists.");
+            }
+        } catch (SQLException exception) {
+            showMessage("This bouquet template cannot be deleted right now.");
         }
     }
 
@@ -237,6 +325,17 @@ public class CatalogueController {
         extraTable.setColumnResizePolicy(TableView.CONSTRAINED_RESIZE_POLICY_FLEX_LAST_COLUMN);
     }
 
+    private void configureTemplateTable() {
+        templateNameColumn.setCellValueFactory(cell ->
+                new javafx.beans.property.ReadOnlyStringWrapper(cell.getValue().getName()));
+        templateOccasionColumn.setCellValueFactory(cell ->
+                new javafx.beans.property.ReadOnlyStringWrapper(cell.getValue().getOccasion()));
+        templateFlowersColumn.setCellValueFactory(cell ->
+                new javafx.beans.property.ReadOnlyStringWrapper(cell.getValue().getFlowerSummary()));
+        templateTable.setPlaceholder(new Label("No bouquet templates are available."));
+        templateTable.setColumnResizePolicy(TableView.CONSTRAINED_RESIZE_POLICY_FLEX_LAST_COLUMN);
+    }
+
     private void loadFlowers() {
         flowerSearchField.clear();
         searchFlowers();
@@ -245,6 +344,15 @@ public class CatalogueController {
     private void loadExtras() {
         extraSearchField.clear();
         searchExtras();
+    }
+
+    private void loadTemplates() {
+        try {
+            templateTable.setItems(FXCollections.observableArrayList(templateService.findAll()));
+        } catch (SQLException exception) {
+            templateTable.getItems().clear();
+            showMessage("Unable to load bouquet templates.");
+        }
     }
 
     private Optional<Flower> showFlowerDialog(Flower flower) {
@@ -304,12 +412,114 @@ public class CatalogueController {
         return dialogResult.value();
     }
 
+    private Optional<BouquetTemplate> showTemplateDialog(BouquetTemplate template) {
+        TextField nameField = new TextField(template == null ? "" : template.getName());
+        TextField occasionField = new TextField(template == null ? "" : template.getOccasion());
+        TextField wrappingField = new TextField(template == null ? "" : valueOrEmpty(template.getWrappingStyle()));
+        TextField messageField = new TextField(template == null ? "" : valueOrEmpty(template.getMessage()));
+        ListView<BouquetFlower> compositionList = new ListView<>(FXCollections.observableArrayList(
+                template == null ? java.util.List.of() : template.getFlowers()));
+        compositionList.setPrefHeight(150);
+        compositionList.setCellFactory(list -> new ListCell<>() {
+            @Override
+            protected void updateItem(BouquetFlower item, boolean empty) {
+                super.updateItem(item, empty);
+                setText(empty || item == null ? null
+                        : item.getQuantity() + " × " + item.getFlower().getName());
+            }
+        });
+
+        ComboBox<Flower> flowerComboBox = new ComboBox<>();
+        flowerComboBox.setPromptText("Choose flower");
+        flowerComboBox.setMaxWidth(Double.MAX_VALUE);
+        flowerComboBox.setConverter(new StringConverter<>() {
+            @Override public String toString(Flower flower) { return flower == null ? "" : flower.getName(); }
+            @Override public Flower fromString(String value) { return null; }
+        });
+        Spinner<Integer> quantitySpinner = new Spinner<>();
+        quantitySpinner.setPrefWidth(90);
+        quantitySpinner.setValueFactory(new SpinnerValueFactory.IntegerSpinnerValueFactory(1, 1, 1));
+        flowerComboBox.valueProperty().addListener((observable, oldFlower, flower) -> {
+            int maximum = flower == null ? 1 : Math.max(1, flower.getStockQuantity());
+            quantitySpinner.setValueFactory(new SpinnerValueFactory.IntegerSpinnerValueFactory(1, maximum, 1));
+        });
+        try {
+            flowerComboBox.setItems(FXCollections.observableArrayList(findActiveFlowers()));
+        } catch (SQLException exception) {
+            showMessage("Unable to load flowers for the template.");
+            return Optional.empty();
+        }
+
+        Label dialogMessage = new Label();
+        Button addFlowerButton = new Button("Add Flower");
+        addFlowerButton.setOnAction(event -> {
+            Flower flower = flowerComboBox.getValue();
+            if (flower == null) {
+                dialogMessage.setText("Select a flower to add.");
+                return;
+            }
+            compositionList.getItems().removeIf(line -> line.getFlower().getId() == flower.getId());
+            compositionList.getItems().add(new BouquetFlower(flower, quantitySpinner.getValue()));
+            dialogMessage.setText("");
+        });
+        Button removeFlowerButton = new Button("Remove Selected");
+        removeFlowerButton.setOnAction(event -> {
+            BouquetFlower selectedFlower = compositionList.getSelectionModel().getSelectedItem();
+            if (selectedFlower == null) {
+                dialogMessage.setText("Select a template flower to remove.");
+                return;
+            }
+            compositionList.getItems().remove(selectedFlower);
+            dialogMessage.setText("");
+        });
+
+        GridPane details = createForm();
+        details.addRow(0, new Label("Name"), nameField);
+        details.addRow(1, new Label("Occasion"), occasionField);
+        details.addRow(2, new Label("Wrapping"), wrappingField);
+        details.addRow(3, new Label("Message"), messageField);
+        HBox flowerControls = new HBox(8, flowerComboBox, quantitySpinner, addFlowerButton);
+        VBox content = new VBox(10, details, new Label("Flower composition"), flowerControls,
+                compositionList, removeFlowerButton, dialogMessage);
+        content.setPrefWidth(520);
+
+        javafx.scene.control.Dialog<BouquetTemplate> dialog = new javafx.scene.control.Dialog<>();
+        ButtonType saveButtonType = new ButtonType("Save", ButtonBar.ButtonData.OK_DONE);
+        dialog.setTitle(template == null ? "Add Bouquet Template" : "Edit Bouquet Template");
+        dialog.getDialogPane().setContent(content);
+        dialog.getDialogPane().getButtonTypes().addAll(saveButtonType, ButtonType.CANCEL);
+        applyDialogStyle(dialog.getDialogPane());
+        Button saveButton = (Button) dialog.getDialogPane().lookupButton(saveButtonType);
+        saveButton.addEventFilter(javafx.event.ActionEvent.ACTION, event -> {
+            if (nameField.getText().isBlank() || occasionField.getText().isBlank()
+                    || compositionList.getItems().isEmpty()) {
+                dialogMessage.setText("Enter a name and occasion, then add at least one flower.");
+                event.consume();
+            }
+        });
+        dialog.setResultConverter(button -> button == saveButtonType
+                ? new BouquetTemplate(template == null ? 0 : template.getId(), nameField.getText(),
+                occasionField.getText(), wrappingField.getText(), messageField.getText(),
+                java.util.List.copyOf(compositionList.getItems()))
+                : null);
+        return dialog.showAndWait();
+    }
+
+    private java.util.List<Flower> findActiveFlowers() throws SQLException {
+        java.util.List<Flower> activeFlowers = new java.util.ArrayList<>();
+        for (Flower flower : flowerService.findAll()) {
+            if (flower.isActive() && flower.getStockQuantity() > 0) activeFlowers.add(flower);
+        }
+        return activeFlowers;
+    }
+
     private <T> DialogResult<T> showFormDialog(String title, GridPane form, FormValueSupplier<T> valueSupplier) {
         javafx.scene.control.Dialog<T> dialog = new javafx.scene.control.Dialog<>();
         ButtonType saveButtonType = new ButtonType("Save", ButtonBar.ButtonData.OK_DONE);
         dialog.setTitle(title);
         dialog.getDialogPane().setContent(form);
         dialog.getDialogPane().getButtonTypes().addAll(saveButtonType, ButtonType.CANCEL);
+        applyDialogStyle(dialog.getDialogPane());
 
         Button saveButton = (Button) dialog.getDialogPane().lookupButton(saveButtonType);
         FormValue<T> formValue = new FormValue<>();
@@ -330,7 +540,14 @@ public class CatalogueController {
         form.setHgap(12);
         form.setVgap(10);
         form.setPrefWidth(360);
+        form.setPadding(new Insets(18, 18, 6, 18));
         return form;
+    }
+
+    private void applyDialogStyle(javafx.scene.control.DialogPane dialogPane) {
+        dialogPane.getStylesheets().add(
+                java.util.Objects.requireNonNull(getClass().getResource("/com/everbloom/css/app.css")).toExternalForm());
+        dialogPane.getStyleClass().add("app-dialog");
     }
 
     private boolean confirmDeletion(String itemType, String itemName) {
@@ -338,6 +555,7 @@ public class CatalogueController {
         alert.setTitle("Delete " + itemType);
         alert.setHeaderText("Delete " + itemName + "?");
         alert.setContentText("This action cannot be undone.");
+        applyDialogStyle(alert.getDialogPane());
         Optional<ButtonType> result = alert.showAndWait();
         return result.isPresent() && result.get() == ButtonType.OK;
     }
@@ -368,11 +586,11 @@ public class CatalogueController {
     }
 
     private String formatPrice(long minorUnits) {
-        return "BDT " + formatEditablePrice(minorUnits);
+        return MoneyFormatter.format(minorUnits);
     }
 
     private String formatEditablePrice(long minorUnits) {
-        return BigDecimal.valueOf(minorUnits, 2).setScale(2).toPlainString();
+        return MoneyFormatter.formatAmount(minorUnits);
     }
 
     private String valueOrDash(String value) {
@@ -384,13 +602,32 @@ public class CatalogueController {
     }
 
     private void showMessage(String message) {
+        messageLabel.getStyleClass().remove("message-success");
         messageLabel.setText(message);
         messageLabel.setVisible(!message.isBlank());
         messageLabel.setManaged(!message.isBlank());
     }
 
+    private void showSuccess(String message) {
+        showMessage(message);
+        messageLabel.getStyleClass().add("message-success");
+    }
+
     private String readableMessage(Exception exception, String fallbackMessage) {
-        return exception.getMessage() == null || exception.getMessage().isBlank() ? fallbackMessage : exception.getMessage();
+        String message = exception.getMessage();
+        if (message == null || message.isBlank()) {
+            return fallbackMessage;
+        }
+        if (message.contains("UNIQUE constraint failed: flowers.name")) {
+            return "A flower with this name already exists.";
+        }
+        if (message.contains("UNIQUE constraint failed: extras.name")) {
+            return "An extra with this name already exists.";
+        }
+        if (message.contains("UNIQUE constraint failed: bouquet_templates.name")) {
+            return "A bouquet template with this name already exists.";
+        }
+        return message;
     }
 
     @FunctionalInterface

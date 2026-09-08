@@ -13,10 +13,10 @@ public class BouquetTemplate {
 
     public BouquetTemplate(long id, String name, String occasion, String wrappingStyle, String message, List<BouquetFlower> flowers) {
         this.id = id;
-        this.name = name;
-        this.occasion = occasion;
-        this.wrappingStyle = wrappingStyle;
-        this.message = message;
+        this.name = normalize(name);
+        this.occasion = normalize(occasion);
+        this.wrappingStyle = normalize(wrappingStyle);
+        this.message = normalize(message);
         this.flowers = new ArrayList<>(flowers);
     }
 
@@ -28,6 +28,15 @@ public class BouquetTemplate {
     public String getMessage() { return message; }
     public List<BouquetFlower> getFlowers() { return List.copyOf(flowers); }
 
+    public String getFlowerSummary() {
+        StringBuilder summary = new StringBuilder();
+        for (BouquetFlower flower : flowers) {
+            if (!summary.isEmpty()) summary.append(", ");
+            summary.append(flower.getQuantity()).append(" × ").append(flower.getFlower().getName());
+        }
+        return summary.toString();
+    }
+
     public BouquetBuilder copyToBuilder() {
         BouquetBuilder builder = new BouquetBuilder().forOccasion(occasion).withWrapping(wrappingStyle).withMessage(message);
         for (BouquetFlower line : flowers) {
@@ -35,5 +44,9 @@ public class BouquetTemplate {
             builder.addFlower(new Flower(flower.getId(), flower.getName(), flower.getColor(), flower.getUnitPrice(), flower.getStockQuantity(), flower.isActive()), line.getQuantity());
         }
         return builder;
+    }
+
+    private String normalize(String value) {
+        return value == null || value.isBlank() ? null : value.trim();
     }
 }

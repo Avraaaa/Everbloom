@@ -16,7 +16,7 @@ class ArrangementGroupTest {
         wedding.add(ceremony); wedding.add(reception);
         assertEquals(39000, wedding.getTotalPrice());
         assertTrue(wedding.getSummary().contains("Ceremony"));
-        assertTrue(wedding.getSummary().contains("Bridal Bouquet: BDT 12000"));
+        assertTrue(wedding.getSummary().contains("Bridal Bouquet: BDT 120.00"));
         assertEquals(List.of(wedding, ceremony, reception), wedding.getAllGroups());
     }
     private BouquetItem item(long price) { return new BouquetItem() { public String getDescription() { return "Bouquet"; } public long getSubtotal() { return price; } }; }
